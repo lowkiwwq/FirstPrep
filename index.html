@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FirstPrep — Твой первый шаг в IT</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Syne:wght@400..800&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Global Navbar -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="#/home" class="logo">
+        <span class="logo-accent">F</span>irstPrep
+      </a>
+      
+      <div class="nav-links">
+        <a href="#/home">Главная</a>
+        <a href="#/courses">Курсы</a>
+        <a href="#/tests">Тесты</a>
+        <a href="#/dashboard">Кабинет</a>
+      </div>
+      
+      <div class="nav-actions">
+        <a href="#/login" class="btn btn-outline-accent">Войти</a>
+        <button class="hamburger-btn" id="mobile-menu-btn">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Mobile Menu -->
+  <div class="mobile-menu" id="mobile-menu">
+    <div class="mobile-nav-links">
+      <a href="#/home">Главная</a>
+      <a href="#/courses">Курсы</a>
+      <a href="#/tests">Тесты</a>
+      <a href="#/dashboard">Кабинет</a>
+      <a href="#/login" class="btn btn-outline-accent" style="margin-top: 24px; text-align: center;">Войти</a>
+    </div>
+  </div>
+
+  <!-- Router View Container -->
+  <div id="app-view"></div>
+
+  <!-- AI Chatbot Floating Component -->
+  <button class="chatbot-fab" id="chatbot-toggle">
+    F
+  </button>
+
+  <div class="chatbot-panel" id="chatbot-panel">
+    <div class="chatbot-header">
+      <div class="chatbot-title">
+        FirstPrep AI
+        <span class="status-dot"></span>
+      </div>
+      <button class="chatbot-close" id="chatbot-close">✕</button>
+    </div>
+    <div class="chatbot-messages">
+      <div class="message ai">
+        <div class="avatar">F</div>
+        <div class="msg-bubble">Привет! Я ИИ-ассистент FirstPrep. Какой курс тебя интересует?</div>
+      </div>
+      <div class="message user">
+        <div class="msg-bubble">Расскажи про инженерную часть</div>
+      </div>
+      <div class="message ai">
+        <div class="avatar">F</div>
+        <div class="msg-bubble">Этот курс покрывает архитектуру, базы данных, сети и алгоритмы. Это идеальный фундамент!</div>
+      </div>
+    </div>
+    <div class="chatbot-input">
+      <input type="text" placeholder="Задай вопрос...">
+      <button class="send-btn">➤</button>
+    </div>
+  </div>
+
+  <script src="views.js"></script>
+  <script src="main.js"></script>
+  <script src="router.js"></script>
+</body>
+</html>

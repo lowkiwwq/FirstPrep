@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FirstPrep — Твой первый шаг в IT</title>
+  <title>Phoenix Forge — Подготовка к FIRST Tech Challenge (FTC)</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,7 +17,7 @@
   <nav class="navbar">
     <div class="nav-container">
       <a href="#/home" class="logo">
-        <span class="logo-accent">F</span>irstPrep
+        <span class="logo-accent" style="color: #FF4D1C;">P</span>hoenix Forge
       </a>
       
       <div class="nav-links">
@@ -52,28 +52,28 @@
 
   <!-- AI Chatbot Floating Component -->
   <button class="chatbot-fab" id="chatbot-toggle">
-    F
+    P
   </button>
 
   <div class="chatbot-panel" id="chatbot-panel">
     <div class="chatbot-header">
       <div class="chatbot-title">
-        FirstPrep AI
+        Phoenix AI
         <span class="status-dot"></span>
       </div>
       <button class="chatbot-close" id="chatbot-close">✕</button>
     </div>
     <div class="chatbot-messages">
       <div class="message ai">
-        <div class="avatar">F</div>
-        <div class="msg-bubble">Привет! Я ИИ-ассистент FirstPrep. Какой курс тебя интересует?</div>
+        <div class="avatar" style="background-color: #FF4D1C;">P</div>
+        <div class="msg-bubble">Привет! Я Phoenix AI — помогу с подготовкой к FTC. Спроси про механику робота, программирование на Java, или как оформить Engineering Portfolio.</div>
       </div>
       <div class="message user">
-        <div class="msg-bubble">Расскажи про инженерную часть</div>
+        <div class="msg-bubble">Что судьи смотрят в Portfolio?</div>
       </div>
       <div class="message ai">
-        <div class="avatar">F</div>
-        <div class="msg-bubble">Этот курс покрывает архитектуру, базы данных, сети и алгоритмы. Это идеальный фундамент!</div>
+        <div class="avatar" style="background-color: #FF4D1C;">P</div>
+        <div class="msg-bubble">Судьи оценивают дизайн робота, процесс создания (Engineering Design Process), командные цели, бизнес-план и Outreach-активности.</div>
       </div>
     </div>
     <div class="chatbot-input">
@@ -82,8 +82,10 @@
     </div>
   </div>
 
-  <script src="views.js"></script>
-  <script src="main.js"></script>
-  <script src="router.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="antigravity.js?v=4"></script>
+  <script src="views.js?v=4"></script>
+  <script src="main.js?v=4"></script>
+  <script src="router.js?v=4"></script>
 </body>
 </html>

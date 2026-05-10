@@ -15,6 +15,8 @@ document.addEventListener('DOMContentLoaded', () => {
     '/dashboard': AppViews.renderDashboard,
   };
 
+  let cleanupAntigravity = null;
+
   function router() {
     let hash = location.hash.slice(1) || '/';
 
@@ -25,11 +27,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const renderFunc = routes[hash] || routes['/'];
 
+    if (cleanupAntigravity) {
+      cleanupAntigravity();
+      cleanupAntigravity = null;
+    }
+
     appContainer.innerHTML = renderFunc();
 
     // Re-initialize animations after DOM change
     if (window.initAnimations) {
       window.initAnimations();
+    }
+
+    if ((hash === '/' || hash === '/home') && window.initAntigravity) {
+      cleanupAntigravity = window.initAntigravity('antigravity-container');
     }
 
     // Test Interface interactions

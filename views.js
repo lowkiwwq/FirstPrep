@@ -1,22 +1,23 @@
 window.AppViews = {
   renderHome: () => `
-    <header class="hero">
-      <div class="hero-container animate-item">
+    <header class="hero" style="position: relative; overflow: hidden;">
+      <div id="antigravity-container" style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none;"></div>
+      <div class="hero-container animate-item" style="position: relative; z-index: 1;">
         <div class="hero-content-wrapper">
           <h1 class="hero-title">
-          <span class="hero-line1">Твой первый шаг</span>
-          <span class="hero-line2">в мир IT-индустрии</span>
+          <span class="hero-line1" style="color: white;">Собери. Запрограммируй.</span>
+          <span class="hero-line2" style="background: linear-gradient(to right, #FF4D1C, #FF2D6B); -webkit-background-clip: text; color: transparent;">Победи на FTC.</span>
         </h1>
-        <div class="hero-stats">
-          <div class="stat-item"><span class="stat-number" data-target="12400">0</span>+ студентов</div>
+        <div class="hero-stats" style="font-family: 'DM Mono', monospace;">
+          <div class="stat-item"><span class="stat-number" data-target="500">0</span>+ участников</div>
           <div class="stat-divider"></div>
           <div class="stat-item"><span class="stat-number" data-target="3">0</span> курса</div>
           <div class="stat-divider"></div>
-          <div class="stat-item"><span class="stat-number" data-target="98">0</span>% сдач</div>
+          <div class="stat-item">World Championship</div>
         </div>
         <div class="hero-buttons">
-          <a href="#/courses" class="btn btn-primary">Выбрать курс</a>
-          <a href="#/features" class="btn btn-outline">Подробнее</a>
+          <a href="#/courses" class="btn btn-primary">Начать подготовку</a>
+          <a href="#/features" class="btn btn-outline">Что такое FTC?</a>
         </div>
         </div>
         <img src="phoenix_transparent.png?v=2" alt="Phoenix" class="hero-phoenix-img">
@@ -27,9 +28,9 @@ window.AppViews = {
       <div class="feature-container">
         <div class="feature-row animate-item">
           <div class="feature-content">
-            <div class="feature-eyebrow">Структура</div>
-            <h2 class="feature-title">Понятный путь от нуля до оффера</h2>
-            <p class="feature-desc">Мы разбили сложный процесс обучения на простые и понятные этапы. Никакой воды — только те знания, которые реально проверяют на собеседованиях.</p>
+            <div class="feature-eyebrow">СЕЗОН 2025–26</div>
+            <h2 class="feature-title">BIOBUZZ™ — новый сезон FTC</h2>
+            <p class="feature-desc">Каждый сентябрь FIRST объявляет новый игровой челлендж. В сезоне 2025–26 — BIOBUZZ™ presented by RTX. Мы готовим тебя заранее: стратегия, механика, код — до старта Kickoff.</p>
           </div>
           <div class="feature-visual">
             <div class="visual-card mockup-placeholder">
@@ -44,16 +45,16 @@ window.AppViews = {
             </div>
           </div>
           <div class="feature-content">
-            <div class="feature-eyebrow">Практика</div>
-            <h2 class="feature-title">Реальные задачи из индустрии</h2>
-            <p class="feature-desc">Оставьте скучные академические задачи в прошлом. Вы будете писать код, который решает настоящие проблемы бизнеса, работая в среде, приближенной к реальной.</p>
+            <div class="feature-eyebrow">СОРЕВНОВАНИЯ</div>
+            <h2 class="feature-title">От отборочных до World Championship</h2>
+            <p class="feature-desc">Путь FTC-команды: Qualifying Tournament → Regional/State Championship → World Championship в Хьюстоне. Phoenix Forge поможет тебе пройти каждый этап.</p>
           </div>
         </div>
         <div class="feature-row animate-item">
           <div class="feature-content">
-            <div class="feature-eyebrow">Поддержка</div>
-            <h2 class="feature-title">Менторы, которые работают в BigTech</h2>
-            <p class="feature-desc">Наши преподаватели — это действующие разработчики из ведущих компаний. Они не просто проверяют домашние задания, а учат мыслить как инженер.</p>
+            <div class="feature-eyebrow">GRACIOUS PROFESSIONALISM</div>
+            <h2 class="feature-title">FTC — это больше чем робот</h2>
+            <p class="feature-desc">Командная работа, outreach, инженерное мышление — участники FTC получают доступ к стипендиям на $80M+. Мы учим не только технике, но и тому, что ценят судьи.</p>
           </div>
           <div class="feature-visual">
             <div class="visual-card mockup-placeholder">
@@ -68,19 +69,19 @@ window.AppViews = {
       <div class="courses-container">
         <div class="courses-grid">
           <a href="#/courses/1" class="course-card">
-            <div class="course-tag">First</div>
+            <div class="course-tag">Engineering</div>
             <h3 class="course-title">Инженерная часть</h3>
-            <p class="course-desc">Архитектура, базы данных, сети и алгоритмы. Фундамент, необходимый каждому разработчику.</p>
+            <p class="course-desc">Изучи принципы проектирования FTC-робота — дриветрейны, манипуляторы, intake-системы. Научись работать с TETRIX и REV Robotics kit.</p>
           </a>
           <a href="#/courses/2" class="course-card">
-            <div class="course-tag">First</div>
+            <div class="course-tag">Coding</div>
             <h3 class="course-title">Кодинг</h3>
-            <p class="course-desc">Практическое программирование. От чистого кода до сложных паттернов проектирования.</p>
+            <p class="course-desc">Освой FTC SDK — напиши автономный режим и TeleOp. Научись использовать OnBot Java, Road Runner, компьютерное зрение (EOCV).</p>
           </a>
           <a href="#/courses/3" class="course-card">
-            <div class="course-tag">First</div>
+            <div class="course-tag">Inspire</div>
             <h3 class="course-title">Inspire</h3>
-            <p class="course-desc">Soft skills, прохождение собеседований и построение карьеры в IT-индустрии.</p>
+            <p class="course-desc">FTC — это не только робот. Научись оформлять Engineering Portfolio, строить команду, проводить outreach и выигрывать номинации судей.</p>
           </a>
         </div>
       </div>
@@ -104,9 +105,10 @@ window.AppViews = {
 
     <footer class="footer animate-item">
       <div class="footer-container">
-        <h2 class="footer-title">Готов начать?</h2>
-        <a href="#/register" class="btn btn-primary">Присоединиться к потоку</a>
-        <p class="footer-legal">© 2026 FirstPrep. Все права защищены.</p>
+        <h2 class="footer-title">Готов к первому турниру?</h2>
+        <p class="footer-desc" style="color: rgba(255, 255, 255, 0.7); margin-bottom: 2rem;">Присоединяйся к Phoenix Forge и начни свой путь к World Championship</p>
+        <a href="#/register" class="btn btn-primary">Начать бесплатно</a>
+        <p class="footer-legal">© 2026 Phoenix Forge. Все права защищены.</p>
       </div>
     </footer>
   `,
@@ -139,8 +141,8 @@ window.AppViews = {
           <div class="catalog-card">
             <div class="catalog-thumb"></div>
             <div class="catalog-info">
-              <h3 class="catalog-title">Алгоритмы и структуры данных</h3>
-              <div class="catalog-meta">12 модулей</div>
+              <h3 class="catalog-title">Инженерная часть</h3>
+              <div class="catalog-meta">16 уроков</div>
               <div class="progress-bar-container"><div class="progress-bar" style="width: 45%;"></div></div>
               <a href="#/courses/1" class="btn btn-outline-accent btn-full">Начать</a>
             </div>
@@ -148,8 +150,8 @@ window.AppViews = {
           <div class="catalog-card">
             <div class="catalog-thumb"></div>
             <div class="catalog-info">
-              <h3 class="catalog-title">Системный дизайн</h3>
-              <div class="catalog-meta">8 модулей</div>
+              <h3 class="catalog-title">Кодинг</h3>
+              <div class="catalog-meta">20 уроков</div>
               <div class="progress-bar-container"><div class="progress-bar" style="width: 10%;"></div></div>
               <a href="#/courses/2" class="btn btn-outline-accent btn-full">Начать</a>
             </div>
@@ -157,8 +159,8 @@ window.AppViews = {
           <div class="catalog-card">
             <div class="catalog-thumb"></div>
             <div class="catalog-info">
-              <h3 class="catalog-title">React под капотом</h3>
-              <div class="catalog-meta">15 модулей</div>
+              <h3 class="catalog-title">Inspire</h3>
+              <div class="catalog-meta">16 уроков</div>
               <div class="progress-bar-container"><div class="progress-bar" style="width: 0%;"></div></div>
               <a href="#/courses/3" class="btn btn-outline-accent btn-full">Начать</a>
             </div>
@@ -172,50 +174,55 @@ window.AppViews = {
     <div class="course-detail-layout animate-item">
       <aside class="lesson-sidebar">
         <div class="lesson-section">
-          <div class="lesson-section-header">1. Введение в алгоритмы</div>
-          <div class="lesson-row completed">
-            <span class="lesson-icon">✓</span>
-            <span class="lesson-title">Что такое О-большое</span>
-            <span class="lesson-duration">12:30</span>
-          </div>
+          <div class="lesson-section-header">1. Основы конструирования</div>
           <div class="lesson-row active">
             <span class="lesson-icon">▶</span>
-            <span class="lesson-title">Массивы и связные списки</span>
+            <span class="lesson-title">1.1 Введение в FTC kit — TETRIX и REV</span>
+            <span class="lesson-duration">12:30</span>
+          </div>
+          <div class="lesson-row">
+            <span class="lesson-icon">📄</span>
+            <span class="lesson-title">1.2 Типы дриветрейнов: Tank, Mecanum, Swerve</span>
             <span class="lesson-duration">18:45</span>
           </div>
           <div class="lesson-row">
             <span class="lesson-icon">📄</span>
-            <span class="lesson-title">Стек и очередь</span>
+            <span class="lesson-title">1.3 Выбор дриветрейна под игровой сезон</span>
             <span class="lesson-duration">10:00</span>
+          </div>
+          <div class="lesson-row">
+            <span class="lesson-icon">▶</span>
+            <span class="lesson-title">1.4 Основы CAD для FTC (onShape)</span>
+            <span class="lesson-duration">25:00</span>
           </div>
         </div>
         <div class="lesson-section">
-          <div class="lesson-section-header">2. Сортировки</div>
+          <div class="lesson-section-header">2. Манипуляторы и intake</div>
           <div class="lesson-row">
             <span class="lesson-icon">▶</span>
-            <span class="lesson-title">Пузырьком и выбором</span>
+            <span class="lesson-title">2.1 Линейные слайды — конструкция</span>
             <span class="lesson-duration">22:15</span>
           </div>
           <div class="lesson-row">
-            <span class="lesson-icon">▶</span>
-            <span class="lesson-title">Быстрая сортировка</span>
-            <span class="lesson-duration">25:00</span>
+            <span class="lesson-icon">📄</span>
+            <span class="lesson-title">2.2 Intake-системы: ролики, swept intake</span>
+            <span class="lesson-duration">15:00</span>
           </div>
         </div>
       </aside>
 
       <main class="lesson-content">
         <div class="lesson-topbar">
-          <div class="breadcrumb">Курсы / Инженерная часть / Алгоритмы и структуры данных</div>
-          <h2 class="lesson-heading">Массивы и связные списки</h2>
+          <div class="breadcrumb">Курсы / Инженерная часть / Основы конструирования</div>
+          <h2 class="lesson-heading">1.1 Введение в FTC kit — TETRIX и REV Robotics</h2>
           <div class="progress-bar-container"><div class="progress-bar" style="width: 15%;"></div></div>
         </div>
         <div class="video-placeholder">Видео плеер</div>
         <div class="lesson-text">
-          <p>В этом уроке мы разберем две базовые структуры данных: массивы и связные списки. Мы обсудим, как они хранятся в памяти, и почему время доступа к элементам в них отличается.</p>
+          <p>Полный курс по механике FTC-робота. От выбора дриветрейна до финальной инспекции на турнире. В этом уроке мы разберем основные наборы деталей, используемые в FIRST Tech Challenge: TETRIX и REV Robotics.</p>
           <br>
-          <h3>Массивы</h3>
-          <p>Массивы представляют собой непрерывный блок памяти. Это позволяет получать доступ к любому элементу за O(1)...</p>
+          <h3>REV Robotics</h3>
+          <p>Система на основе алюминиевого профиля 15x15мм (extrusion), которая обеспечивает гибкость сборки. Вы можете крепить детали в любой точке профиля...</p>
         </div>
       </main>
     </div>
@@ -228,36 +235,60 @@ window.AppViews = {
         <div class="tests-grid">
           <div class="test-card">
             <div class="test-header">
-              <h3 class="test-title">Основы сетей</h3>
+              <h3 class="test-title">Дриветрейны</h3>
               <span class="badge badge-success">Пройден</span>
             </div>
             <div class="test-meta">
-              <span>Вопросов: 20</span>
-              <span>Время: 30 мин</span>
+              <span>Вопросов: 15</span>
+              <span>Время: 20 мин</span>
               <span>Попыток: 0/2</span>
             </div>
             <a href="#/tests/interface" class="btn btn-outline btn-full disabled">Результаты</a>
           </div>
           <div class="test-card">
             <div class="test-header">
-              <h3 class="test-title">Базы данных (SQL)</h3>
+              <h3 class="test-title">Манипуляторы и передачи</h3>
               <span class="badge badge-accent">Доступен</span>
             </div>
             <div class="test-meta">
-              <span>Вопросов: 15</span>
-              <span>Время: 25 мин</span>
+              <span>Вопросов: 20</span>
+              <span>Время: 30 мин</span>
               <span>Попыток: 2/2</span>
             </div>
             <a href="#/tests/interface" class="btn btn-primary btn-full">Начать тест</a>
           </div>
           <div class="test-card">
             <div class="test-header">
-              <h3 class="test-title">Архитектура ПО</h3>
+              <h3 class="test-title">Финальный тест: Инженерная часть</h3>
               <span class="badge badge-neutral">Скоро</span>
             </div>
             <div class="test-meta">
-              <span>Вопросов: 30</span>
+              <span>Вопросов: 35</span>
               <span>Время: 45 мин</span>
+              <span>Попыток: 1/1</span>
+            </div>
+            <button class="btn btn-outline btn-full" disabled>Недоступен</button>
+          </div>
+          <div class="test-card">
+            <div class="test-header">
+              <h3 class="test-title">FTC SDK и Hardware Map</h3>
+              <span class="badge badge-neutral">Скоро</span>
+            </div>
+            <div class="test-meta">
+              <span>Вопросов: 20</span>
+              <span>Время: 20 мин</span>
+              <span>Попыток: 1/1</span>
+            </div>
+            <button class="btn btn-outline btn-full" disabled>Недоступен</button>
+          </div>
+          <div class="test-card">
+            <div class="test-header">
+              <h3 class="test-title">Engineering Portfolio</h3>
+              <span class="badge badge-neutral">Скоро</span>
+            </div>
+            <div class="test-meta">
+              <span>Вопросов: 20</span>
+              <span>Время: 20 мин</span>
               <span>Попыток: 1/1</span>
             </div>
             <button class="btn btn-outline btn-full" disabled>Недоступен</button>
@@ -275,12 +306,12 @@ window.AppViews = {
         <a href="#/tests" class="btn btn-outline">Выйти</a>
       </div>
       <div class="test-question-card">
-        <h2 class="test-question">Что означает ACID в контексте баз данных?</h2>
+        <h2 class="test-question">В чем основное преимущество Mecanum дриветрейна перед Tank?</h2>
         <div class="test-options">
-          <div class="test-option">Atomicity, Consistency, Isolation, Durability</div>
-          <div class="test-option">Availability, Consistency, Isolation, Durability</div>
-          <div class="test-option">Atomicity, Concurrency, Isolation, Distribution</div>
-          <div class="test-option">Asynchronous, Consistent, Indexed, Dynamic</div>
+          <div class="test-option">Способность двигаться в любом направлении (holonomic) без поворота корпуса</div>
+          <div class="test-option">Более высокая скорость на прямых участках</div>
+          <div class="test-option">Большая сила тяги (pushing power) при столкновениях</div>
+          <div class="test-option">Требует только два мотора для управления</div>
         </div>
       </div>
       <div class="test-bottombar">
@@ -300,7 +331,7 @@ window.AppViews = {
   renderLogin: () => `
     <div class="auth-wrapper animate-item">
       <div class="auth-card">
-        <div class="auth-logo"><span class="logo-accent">F</span>irstPrep</div>
+        <div class="auth-logo"><span class="logo-accent" style="color: #FF4D1C;">P</span>hoenix Forge</div>
         <h2 class="auth-heading">Вход в аккаунт</h2>
         <form class="auth-form" onsubmit="event.preventDefault(); window.location.hash='#/dashboard'">
           <div class="input-group">
@@ -321,7 +352,7 @@ window.AppViews = {
   renderRegister: () => `
     <div class="auth-wrapper animate-item">
       <div class="auth-card">
-        <div class="auth-logo"><span class="logo-accent">F</span>irstPrep</div>
+        <div class="auth-logo"><span class="logo-accent" style="color: #FF4D1C;">P</span>hoenix Forge</div>
         <h2 class="auth-heading">Регистрация</h2>
         <form class="auth-form" onsubmit="event.preventDefault(); window.location.hash='#/dashboard'">
           <div class="input-group">
@@ -350,34 +381,41 @@ window.AppViews = {
         
         <div class="dashboard-stats">
           <div class="stat-card">
-            <div class="stat-val">3</div>
-            <div class="stat-label">Курса начато</div>
+            <div class="stat-val">45</div>
+            <div class="stat-label">Уроков пройдено</div>
           </div>
           <div class="stat-card">
             <div class="stat-val">12</div>
-            <div class="stat-label">Тестов пройдено</div>
+            <div class="stat-label">Тестов сдано</div>
           </div>
           <div class="stat-card">
             <div class="stat-val accent">5 🔥</div>
-            <div class="stat-label">Дней подряд</div>
+            <div class="stat-label">Дней в Phoenix Forge</div>
           </div>
         </div>
 
         <section class="dashboard-section">
           <h3 class="section-title">Продолжить обучение</h3>
-          <div class="courses-grid" style="grid-template-columns: repeat(2, 1fr); gap: 24px;">
+          <div class="courses-grid" style="grid-template-columns: repeat(3, 1fr); gap: 24px;">
             <div class="catalog-card">
               <div class="catalog-info">
-                <h3 class="catalog-title">Алгоритмы и структуры данных</h3>
+                <h3 class="catalog-title">Инженерная часть</h3>
                 <div class="progress-bar-container"><div class="progress-bar" style="width: 45%;"></div></div>
                 <a href="#/courses/1" class="btn btn-outline-accent btn-full">Продолжить</a>
               </div>
             </div>
             <div class="catalog-card">
               <div class="catalog-info">
-                <h3 class="catalog-title">Системный дизайн</h3>
+                <h3 class="catalog-title">Кодинг</h3>
                 <div class="progress-bar-container"><div class="progress-bar" style="width: 10%;"></div></div>
                 <a href="#/courses/2" class="btn btn-outline-accent btn-full">Продолжить</a>
+              </div>
+            </div>
+            <div class="catalog-card">
+              <div class="catalog-info">
+                <h3 class="catalog-title">Inspire</h3>
+                <div class="progress-bar-container"><div class="progress-bar" style="width: 30%;"></div></div>
+                <a href="#/courses/3" class="btn btn-outline-accent btn-full">Продолжить</a>
               </div>
             </div>
           </div>
@@ -388,11 +426,19 @@ window.AppViews = {
           <div class="cert-grid">
             <div class="cert-card locked">
               <div class="cert-icon">🔒</div>
-              <div class="cert-name">Инженерная часть</div>
+              <div class="cert-name">Сертификат: Инженерная часть FTC</div>
             </div>
             <div class="cert-card locked">
               <div class="cert-icon">🔒</div>
-              <div class="cert-name">Кодинг</div>
+              <div class="cert-name">Сертификат: Кодинг FTC</div>
+            </div>
+            <div class="cert-card locked">
+              <div class="cert-icon">🔒</div>
+              <div class="cert-name">Сертификат: Inspire & Portfolio FTC</div>
+            </div>
+            <div class="cert-card locked">
+              <div class="cert-icon">🏆</div>
+              <div class="cert-name" style="color: var(--accent);">Phoenix Forge — Full FTC Certificate</div>
             </div>
           </div>
         </section>
@@ -411,13 +457,13 @@ window.AppViews = {
               </thead>
               <tbody>
                 <tr>
-                  <td>Основы сетей</td>
+                  <td>Дриветрейны</td>
                   <td>12.04.2026</td>
                   <td>95%</td>
                   <td><span class="badge badge-success">Сдан</span></td>
                 </tr>
                 <tr>
-                  <td>Linux & Bash</td>
+                  <td>Манипуляторы и передачи</td>
                   <td>10.04.2026</td>
                   <td>40%</td>
                   <td><span class="badge badge-error">Не сдан</span></td>

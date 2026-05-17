@@ -1,0 +1,502 @@
+{
+  "total": 13,
+  "accuracy": 1.0,
+  "refusal_accuracy": 1.0,
+  "answer_accuracy": 1.0,
+  "results": [
+    {
+      "id": "q001",
+      "type": "factual",
+      "question": "What is the OBELISK in the DECODE game?",
+      "expected_has_answer": true,
+      "has_answer": true,
+      "correct": true,
+      "candidates": 29,
+      "chunks_used": 3,
+      "answer_preview": "OBELISK в игре DECODE представляет собой равносторонний треугольный призму, высотой 23 дюйма (58.40 см) и с шириной каждой прямоугольной грани 11 дюймов (27.95 см). Он расположен с одной из прямоугольных граней, ориентированной к стороне ГОЛА, вне периметра поля. На каждой из трех граней OBELISK раз",
+      "sources": [
+        {
+          "source": "DECODE_Competition_Manual_TU32",
+          "chapter": "8Game Overview",
+          "section": "",
+          "page_start": 58,
+          "page_end": 59,
+          "content_type": "text"
+        },
+        {
+          "source": "DECODE_Competition_Manual_TU32",
+          "chapter": "9.6OBELISK",
+          "section": "",
+          "page_start": 65,
+          "page_end": 69,
+          "content_type": "text"
+        },
+        {
+          "source": "DECODE_Competition_Manual_TU32",
+          "chapter": "9.9SCORING ELEMENTS",
+          "section": "",
+          "page_start": 73,
+          "page_end": 75,
+          "content_type": "text"
+        }
+      ]
+    },
+    {
+      "id": "q002",
+      "type": "factual",
+      "question": "What are SCORING ELEMENTS in this competition?",
+      "expected_has_answer": true,
+      "has_answer": true,
+      "correct": true,
+      "candidates": 33,
+      "chunks_used": 5,
+      "answer_preview": "SCORING ELEMENTS in this competition are ALLIANCE neutral ARTIFACTS, specifically 5 in. (12.70 cm) nominal GopherResisDent™ polypropylene balls. There are a total of 24 purple (P) ARTIFACTS and 12 green (G) ARTIFACTS in a DECODE MATCH. The ARTIFACTS are not perfectly spherical and may vary in size, ",
+      "sources": [
+        {
+          "source": "DECODE_Competition_Manual_TU32",
+          "chapter": "9.9SCORING ELEMENTS",
+          "section": "",
+          "page_start": 73,
+          "page_end": 75,
+          "content_type": "text"
+        },
+        {
+          "source": "DECODE_Competition_Manual_TU32",
+          "chapter": "11.4 In-MATCH",
+          "section": "",
+          "page_start": 106,
+          "page_end": 107,
+          "content_type": "text"
+        },
+        {
+          "source": "DECODE_Competition_Manual_TU32",
+          "chapter": "10.3 Setup",
+          "section": "",
+          "page_start": 80,
+          "page_end": 82,
+          "content_type": "text"
+        },
+        {
+          "source": "DECODE_Competition_Manual_TU32",
+          "chapter": "16 Glossary",
+          "section": "",
+          "page_start": 183,
+          "page_end": 184,
+          "content_type": "text"
+        },
+        {
+          "source": "DECODE_Competition_Manual_TU32",
+          "chapter": "10.6 Violations",
+          "section": "",
+          "page_start": 93,
+          "page_end": 95,
+          "content_type": "text"
+        }
+      ]
+    },
+    {
+      "id": "q003",
+      "type": "explanatory",
+      "question": "How is Advancement Points calculated?",
+      "expected_has_answer": true,
+      "has_answer": true,
+      "correct": true,
+      "candidates": 28,
+      "chunks_used": 3,
+      "answer_preview": "Advancement Points are calculated based on a team's overall performance at an individual event, with different categories contributing to the total points. The calculation is detailed in Table 4-1 of the DECODE Competition Manual. Here are the main categories for earning Advancement Points:\n\n1. **Qu",
+      "sources": [
+        {
+          "source": "DECODE_Competition_Manual_TU32",
+          "chapter": "4.1Advancement Points Calculation",
+          "section": "",
+          "page_start": 24,
+          "page_end": 26,
+          "content_type": "text"
+        },
+        {
+          "source": "DECODE_Competition_Manual_TU32",
+          "chapter": "13.8 Dual Division Events",
+          "section": "",
+          "page_start": 170,
+          "page_end": 171,
+          "content_type": "text"
+        },
+        {
+          "source": "DECODE_Competition_Manual_TU32",
+          "chapter": "4.1Advancement Points Calculation",
+          "section": "",
+          "page_start": 26,
+          "page_end": 27,
+          "content_type": "text"
+        }
+      ]
+    },
+    {
+      "id": "q004",
+      "type": "factual",
+      "question": "What motors and actuators are allowed for the ROBOT?",
+      "expected_has_answer": true,
+      "has_answer": true,
+      "correct": true,
+      "candidates": 32,
+      "chunks_used": 5,
+      "answer_preview": "Для ROBOT разрешены следующие моторы и актуаторы:\n\n### Моторы:\n1. **AndyMark NeveRest 12V DC**: am-3104, am-3104b\n2. **AndyMark NeveRest Hex 12V DC**: am-3104c\n3. **goBILDA Yellow Jacket 520x Series 12V DC**: 5201-0002-0026, и т.д. (5201, 5202, 5203, 5204)\n4. **goBILDA 5000 Series 12V DC**: 5000-000",
+      "sources": [
+        {
+          "source": "DECODE_Competition_Manual_TU32",
+          "chapter": "12.5 Motors & Actuators",
+          "section": "",
+          "page_start": 133,
+          "page_end": 134,
+          "content_type": "text"
+        },
+        {
+          "source": "DECODE_Competition_Manual_TU32",
+          "chapter": "12.5 Motors & Actuators",
+          "section": "",
+          "page_start": 134,
+          "page_end": 135,
+          "content_type": "text"
+        },
+        {
+          "source": "DECODE_Competition_Manual_TU32",
+          "chapter": "12.5 Motors & Actuators",
+          "section": "",
+          "page_start": 135,
+          "page_end": 136,
+          "content_type": "text"
+        },
+        {
+          "source": "DECODE_Competition_Manual_TU32",
+          "chapter": "12.7 Control, Command & Signals System",
+          "section": "",
+          "page_start": 143,
+          "page_end": 144,
+          "content_type": "text"
+        },
+        {
+          "source": "DECODE_Competition_Manual_TU32",
+          "chapter": "12.6 Power Distribution",
+          "section": "",
+          "page_start": 136,
+          "page_end": 137,
+          "content_type": "text"
+        }
+      ]
+    },
+    {
+      "id": "q005",
+      "type": "practical",
+      "question": "What are the rules for ROBOT construction and safety?",
+      "expected_has_answer": true,
+      "has_answer": true,
+      "correct": true,
+      "candidates": 29,
+      "chunks_used": 5,
+      "answer_preview": "Правила для конструкции и безопасности ROBOT описаны в нескольких разделах руководства DECODE Competition Manual. Вот основные моменты:\n\n1. **Общие правила конструкции ROBOT**:\n   - ROBOT должен соответствовать ограничениям по максимальным механическим расширениям: горизонтальное расширение не должн",
+      "sources": [
+        {
+          "source": "DECODE_Competition_Manual_TU32",
+          "chapter": "12.1 General ROBOT Design",
+          "section": "",
+          "page_start": 123,
+          "page_end": 125,
+          "content_type": "text"
+        },
+        {
+          "source": "DECODE_Competition_Manual_TU32",
+          "chapter": "12.3 Fabrication",
+          "section": "",
+          "page_start": 128,
+          "page_end": 130,
+          "content_type": "text"
+        },
+        {
+          "source": "DECODE_Competition_Manual_TU32",
+          "chapter": "12 ROBOT Construction Rules (R)",
+          "section": "",
+          "page_start": 119,
+          "page_end": 120,
+          "content_type": "text"
+        },
+        {
+          "source": "DECODE_Competition_Manual_TU32",
+          "chapter": "12.6 Power Distribution",
+          "section": "",
+          "page_start": 137,
+          "page_end": 139,
+          "content_type": "text"
+        },
+        {
+          "source": "DECODE_Competition_Manual_TU32",
+          "chapter": "1.6This Document & Its Conventions",
+          "section": "",
+          "page_start": 10,
+          "page_end": 11,
+          "content_type": "text"
+        }
+      ]
+    },
+    {
+      "id": "q006_ru",
+      "type": "factual",
+      "question": "Что такое OBELISK в игре DECODE?",
+      "expected_has_answer": true,
+      "has_answer": true,
+      "correct": true,
+      "candidates": 32,
+      "chunks_used": 3,
+      "answer_preview": "OBELISK в игре DECODE представляет собой равносторонний треугольный призму, высотой 23 дюйма (58.40 см) и с шириной каждой прямоугольной грани 11 дюймов (27.95 см). Он расположен с одной из прямоугольных граней, ориентированной к стороне ГОЛА, вне периметра поля. На каждой из трех граней OBELISK раз",
+      "sources": [
+        {
+          "source": "DECODE_Competition_Manual_TU32",
+          "chapter": "8Game Overview",
+          "section": "",
+          "page_start": 58,
+          "page_end": 59,
+          "content_type": "text"
+        },
+        {
+          "source": "DECODE_Competition_Manual_TU32",
+          "chapter": "9.6OBELISK",
+          "section": "",
+          "page_start": 65,
+          "page_end": 69,
+          "content_type": "text"
+        },
+        {
+          "source": "DECODE_Competition_Manual_TU32",
+          "chapter": "9.9SCORING ELEMENTS",
+          "section": "",
+          "page_start": 73,
+          "page_end": 75,
+          "content_type": "text"
+        }
+      ]
+    },
+    {
+      "id": "q007_ru",
+      "type": "factual",
+      "question": "Какие моторы разрешены для использования в роботе?",
+      "expected_has_answer": true,
+      "has_answer": true,
+      "correct": true,
+      "candidates": 33,
+      "chunks_used": 5,
+      "answer_preview": "Разрешенные моторы для использования в роботе перечислены в разделе R501 \"Allowable motors\" источника DECODE_Competition_Manual_TU32, стр. 133-134. Вот список некоторых из них:\n\n1. AndyMark NeveRest 12V DC (am-3104, am-3104b)\n2. AndyMark NeveRest Hex 12V DC (am-3104c)\n3. goBILDA Yellow Jacket 520x S",
+      "sources": [
+        {
+          "source": "DECODE_Competition_Manual_TU32",
+          "chapter": "12.5 Motors & Actuators",
+          "section": "",
+          "page_start": 134,
+          "page_end": 135,
+          "content_type": "text"
+        },
+        {
+          "source": "DECODE_Competition_Manual_TU32",
+          "chapter": "12.5 Motors & Actuators",
+          "section": "",
+          "page_start": 133,
+          "page_end": 134,
+          "content_type": "text"
+        },
+        {
+          "source": "DECODE_Competition_Manual_TU32",
+          "chapter": "12.6 Power Distribution",
+          "section": "",
+          "page_start": 137,
+          "page_end": 139,
+          "content_type": "text"
+        },
+        {
+          "source": "DECODE_Competition_Manual_TU32",
+          "chapter": "12.5 Motors & Actuators",
+          "section": "",
+          "page_start": 135,
+          "page_end": 136,
+          "content_type": "text"
+        },
+        {
+          "source": "DECODE_Competition_Manual_TU32",
+          "chapter": "12.6 Power Distribution",
+          "section": "",
+          "page_start": 140,
+          "page_end": 141,
+          "content_type": "text"
+        }
+      ]
+    },
+    {
+      "id": "q008_ru",
+      "type": "explanatory",
+      "question": "Как начисляются очки продвижения (advancement points)?",
+      "expected_has_answer": true,
+      "has_answer": true,
+      "correct": true,
+      "candidates": 27,
+      "chunks_used": 2,
+      "answer_preview": "Очки продвижения (advancement points) начисляются командам на основе их общей производительности на индивидуальном событии. Команды ранжируются по количеству очков, которые они зарабатывают, и лучшие команды, не прошедшие дальше, квалифицируются на следующий уровень игры, в пределах выделенных мест ",
+      "sources": [
+        {
+          "source": "DECODE_Competition_Manual_TU32",
+          "chapter": "4.1Advancement Points Calculation",
+          "section": "",
+          "page_start": 24,
+          "page_end": 26,
+          "content_type": "text"
+        },
+        {
+          "source": "DECODE_Competition_Manual_TU32",
+          "chapter": "4.1Advancement Points Calculation",
+          "section": "",
+          "page_start": 26,
+          "page_end": 27,
+          "content_type": "text"
+        }
+      ]
+    },
+    {
+      "id": "q009_ru",
+      "type": "practical",
+      "question": "Какие есть правила безопасности для робота?",
+      "expected_has_answer": true,
+      "has_answer": true,
+      "correct": true,
+      "candidates": 33,
+      "chunks_used": 5,
+      "answer_preview": "Правила безопасности для робота изложены в разделе 12.6 \"Power Distribution\" и 11.3 \"Pre-MATCH\" из источника DECODE_Competition_Manual_TU32. Вот основные моменты:\n\n1. **Общие правила безопасности**:\n   - Правила безопасности применяются в любое время на мероприятии, не только во время матчей (стр. 1",
+      "sources": [
+        {
+          "source": "DECODE_Competition_Manual_TU32",
+          "chapter": "12 ROBOT Construction Rules (R)",
+          "section": "",
+          "page_start": 119,
+          "page_end": 120,
+          "content_type": "text"
+        },
+        {
+          "source": "DECODE_Competition_Manual_TU32",
+          "chapter": "12.6 Power Distribution",
+          "section": "",
+          "page_start": 136,
+          "page_end": 137,
+          "content_type": "text"
+        },
+        {
+          "source": "DECODE_Competition_Manual_TU32",
+          "chapter": "11.3 Pre-MATCH",
+          "section": "",
+          "page_start": 100,
+          "page_end": 102,
+          "content_type": "text"
+        },
+        {
+          "source": "DECODE_Competition_Manual_TU32",
+          "chapter": "3.3MATCH Eligibility Rules",
+          "section": "",
+          "page_start": 20,
+          "page_end": 23,
+          "content_type": "text"
+        },
+        {
+          "source": "DECODE_Competition_Manual_TU32",
+          "chapter": "11.4 In-MATCH",
+          "section": "",
+          "page_start": 103,
+          "page_end": 104,
+          "content_type": "text"
+        }
+      ]
+    },
+    {
+      "id": "q010_ru",
+      "type": "factual",
+      "question": "Что такое SCORING ELEMENTS в этом соревновании?",
+      "expected_has_answer": true,
+      "has_answer": true,
+      "correct": true,
+      "candidates": 33,
+      "chunks_used": 5,
+      "answer_preview": "SCORING ELEMENTS в соревновании DECODE представляют собой нейтральные артефакты, которые используются для начисления очков. Они представлены в виде полипропиленовых шаров GopherResisDent™ размером 5 дюймов (12.70 см) в диаметре, которые бывают двух цветов: 24 фиолетовых (P) и 12 зеленых (G). Артефак",
+      "sources": [
+        {
+          "source": "DECODE_Competition_Manual_TU32",
+          "chapter": "9.9SCORING ELEMENTS",
+          "section": "",
+          "page_start": 73,
+          "page_end": 75,
+          "content_type": "text"
+        },
+        {
+          "source": "DECODE_Competition_Manual_TU32",
+          "chapter": "11.4 In-MATCH",
+          "section": "",
+          "page_start": 106,
+          "page_end": 107,
+          "content_type": "text"
+        },
+        {
+          "source": "DECODE_Competition_Manual_TU32",
+          "chapter": "10.3 Setup",
+          "section": "",
+          "page_start": 80,
+          "page_end": 82,
+          "content_type": "text"
+        },
+        {
+          "source": "DECODE_Competition_Manual_TU32",
+          "chapter": "16 Glossary",
+          "section": "",
+          "page_start": 183,
+          "page_end": 184,
+          "content_type": "text"
+        },
+        {
+          "source": "DECODE_Competition_Manual_TU32",
+          "chapter": "10.6 Violations",
+          "section": "",
+          "page_start": 93,
+          "page_end": 95,
+          "content_type": "text"
+        }
+      ]
+    },
+    {
+      "id": "q011",
+      "type": "negative",
+      "question": "What is the weather forecast for tomorrow?",
+      "expected_has_answer": false,
+      "has_answer": false,
+      "correct": true,
+      "candidates": 36,
+      "chunks_used": 0,
+      "answer_preview": "В предоставленных материалах нет информации по этому вопросу.",
+      "sources": []
+    },
+    {
+      "id": "q012_ru",
+      "type": "negative",
+      "question": "Как приготовить борщ?",
+      "expected_has_answer": false,
+      "has_answer": false,
+      "correct": true,
+      "candidates": 38,
+      "chunks_used": 0,
+      "answer_preview": "В предоставленных материалах нет информации по этому вопросу.",
+      "sources": []
+    },
+    {
+      "id": "q013_ru",
+      "type": "negative",
+      "question": "Кто написал «Войну и мир»?",
+      "expected_has_answer": false,
+      "has_answer": false,
+      "correct": true,
+      "candidates": 37,
+      "chunks_used": 0,
+      "answer_preview": "В предоставленных материалах нет информации по этому вопросу.",
+      "sources": []
+    }
+  ]
+}

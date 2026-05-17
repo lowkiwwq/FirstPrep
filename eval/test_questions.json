@@ -1,0 +1,80 @@
+[
+  {
+    "id": "q001",
+    "type": "factual",
+    "question": "What is the OBELISK in the DECODE game?",
+    "expected_has_answer": true
+  },
+  {
+    "id": "q002",
+    "type": "factual",
+    "question": "What are SCORING ELEMENTS in this competition?",
+    "expected_has_answer": true
+  },
+  {
+    "id": "q003",
+    "type": "explanatory",
+    "question": "How is Advancement Points calculated?",
+    "expected_has_answer": true
+  },
+  {
+    "id": "q004",
+    "type": "factual",
+    "question": "What motors and actuators are allowed for the ROBOT?",
+    "expected_has_answer": true
+  },
+  {
+    "id": "q005",
+    "type": "practical",
+    "question": "What are the rules for ROBOT construction and safety?",
+    "expected_has_answer": true
+  },
+  {
+    "id": "q006_ru",
+    "type": "factual",
+    "question": "Что такое OBELISK в игре DECODE?",
+    "expected_has_answer": true
+  },
+  {
+    "id": "q007_ru",
+    "type": "factual",
+    "question": "Какие моторы разрешены для использования в роботе?",
+    "expected_has_answer": true
+  },
+  {
+    "id": "q008_ru",
+    "type": "explanatory",
+    "question": "Как начисляются очки продвижения (advancement points)?",
+    "expected_has_answer": true
+  },
+  {
+    "id": "q009_ru",
+    "type": "practical",
+    "question": "Какие есть правила безопасности для робота?",
+    "expected_has_answer": true
+  },
+  {
+    "id": "q010_ru",
+    "type": "factual",
+    "question": "Что такое SCORING ELEMENTS в этом соревновании?",
+    "expected_has_answer": true
+  },
+  {
+    "id": "q011",
+    "type": "negative",
+    "question": "What is the weather forecast for tomorrow?",
+    "expected_has_answer": false
+  },
+  {
+    "id": "q012_ru",
+    "type": "negative",
+    "question": "Как приготовить борщ?",
+    "expected_has_answer": false
+  },
+  {
+    "id": "q013_ru",
+    "type": "negative",
+    "question": "Кто написал «Войну и мир»?",
+    "expected_has_answer": false
+  }
+]

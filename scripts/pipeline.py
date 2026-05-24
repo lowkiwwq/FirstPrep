@@ -17,7 +17,8 @@ from scripts.extract.extract_text import run as extract_text
 
 
 def _refresh_faiss() -> None:
-    """Перестраивает FAISS-индекс из актуального состояния ChromaDB."""
+    """Перестраивает FAISS-индекс из актуального состояния ChromaDB.
+    Также инвалидирует семантический кэш (db_version меняется)."""
     try:
         from scripts.migrate_to_faiss import migrate
         migrate()
@@ -25,6 +26,13 @@ def _refresh_faiss() -> None:
         import rag.retriever as _ret
         _ret._faiss_store = None
         _ret._bm25_index = None
+        # Обновляем версию БД в семантическом кэше → старые записи будут проигнорированы
+        try:
+            from rag.semantic_cache import get_cache
+            get_cache().refresh_db_version()
+            print("  [Cache] semantic cache db_version refreshed (old entries invalidated)")
+        except Exception:
+            pass
     except Exception as e:
         print(f"  [FAISS rebuild skipped: {e}]")
 

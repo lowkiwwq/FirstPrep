@@ -9,30 +9,35 @@
 
 import json
 import sys
+import threading
 from pathlib import Path
 from typing import Any
 
 import chromadb
-from openai import OpenAI
 from rank_bm25 import BM25Okapi
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from config import (
     CHROMA_COLLECTION, CHROMA_PERSIST_DIR, CHUNKS_DIR,
-    EMBEDDING_MODEL, OPENAI_API_KEY,
+    EMBEDDING_MODEL,
     RETRIEVAL_BM25_TOP_K, RETRIEVAL_VECTOR_TOP_K,
     VECTOR_FALLBACK_DISTANCE, VECTOR_FALLBACK_TOP_K,
 )
 from rag.faiss_store import FAISSStore
+from rag.openai_client import embed as _openai_embed
 
-client = OpenAI(api_key=OPENAI_API_KEY)
-
-# Disk-persistent embedding cache
+# Disk-persistent embedding cache (versioned by model name)
 import hashlib as _hashlib
 import pickle as _pickle
 
 _CACHE_PATH = Path(__file__).parent.parent / "data" / "embedding_cache.pkl"
 _embedding_cache: dict[str, list[float]] = {}
+_cache_lock = threading.Lock()  # защищаем чтение/запись dict + файла
+
+
+def _cache_key(text: str, model: str = EMBEDDING_MODEL) -> str:
+    """Ключ кэша включает модель — при смене модели старые векторы не используются."""
+    return f"{model}:{_hashlib.md5(text.encode()).hexdigest()}"
 
 
 def _load_embedding_cache() -> None:
@@ -41,16 +46,24 @@ def _load_embedding_cache() -> None:
         try:
             with open(_CACHE_PATH, "rb") as f:
                 _embedding_cache = _pickle.load(f)
+            # Миграция со старого формата (key без model prefix)
+            if _embedding_cache and not any(":" in k for k in _embedding_cache):
+                print("[CACHE] Detected legacy embedding cache (no model prefix), clearing.")
+                _embedding_cache = {}
         except Exception:
             _embedding_cache = {}
 
 
 def _save_embedding_cache() -> None:
+    """Thread-safe запись. Вызывать ТОЛЬКО под _cache_lock."""
     try:
-        with open(_CACHE_PATH, "wb") as f:
+        # Атомарная запись: пишем в tmp, потом rename
+        tmp = _CACHE_PATH.with_suffix(".pkl.tmp")
+        with open(tmp, "wb") as f:
             _pickle.dump(_embedding_cache, f)
-    except Exception:
-        pass
+        tmp.replace(_CACHE_PATH)
+    except Exception as e:
+        print(f"[CACHE] embedding cache save failed: {e}")
 
 
 _load_embedding_cache()
@@ -75,12 +88,24 @@ def _get_collection() -> chromadb.Collection:
 
 
 def _embed_query(query: str) -> list[float]:
-    key = _hashlib.md5(query.encode()).hexdigest()
-    if key not in _embedding_cache:
-        response = client.embeddings.create(model=EMBEDDING_MODEL, input=[query])
-        _embedding_cache[key] = response.data[0].embedding
-        _save_embedding_cache()   # persist immediately
-    return _embedding_cache[key]
+    """Возвращает embedding запроса. При сбое API возвращает нулевой вектор
+    (гарантирует что pipeline не упадёт — векторный поиск вернёт случайные чанки,
+     BM25 всё равно отработает, reranker отфильтрует мусор)."""
+    key = _cache_key(query)
+    with _cache_lock:
+        cached = _embedding_cache.get(key)
+    if cached is not None:
+        return cached
+
+    vec = _openai_embed(query)
+    if vec is None:
+        # Graceful degradation — нулевой вектор (BM25 будет основным сигналом)
+        return [0.0] * 1536
+
+    with _cache_lock:
+        _embedding_cache[key] = vec
+        _save_embedding_cache()
+    return vec
 
 
 class BM25Index:

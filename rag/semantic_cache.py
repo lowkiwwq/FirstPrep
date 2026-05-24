@@ -3,14 +3,20 @@
 Принцип работы:
   1. Вычислить эмбеддинг нового вопроса.
   2. Сравнить с эмбеддингами кэшированных вопросов (cosine similarity).
-  3. Если max_similarity >= THRESHOLD → cache hit: вернуть готовый ответ за ~50ms.
+  3. Если max_similarity >= THRESHOLD и совпадает версия БД → cache hit.
   4. Иначе → cache miss: выполнить полный пайплайн, сохранить в кэш.
 
-Хранение: semantic_cache.pkl (pickle).
+Версионирование (ВАЖНО!):
+  Кэш хранит "db_version" — хеш состояния векторной БД (число чанков + ids).
+  При изменении БД (загружены новые документы) кэш АВТОМАТИЧЕСКИ инвалидируется
+  записи со старой версией БД игнорируются.
+
+Хранение: data/semantic_cache.pkl (pickle, атомарная запись через tmp).
 Ёмкость:  500 записей, при переполнении удаляется самая старая (FIFO).
-Thread-safety: threading.Lock защищает все операции.
+Thread-safety: threading.Lock на всех операциях.
 """
 
+import hashlib
 import pickle
 import sys
 import threading
@@ -24,12 +30,35 @@ from config import SEMANTIC_CACHE_MAX, SEMANTIC_CACHE_PATH, SEMANTIC_CACHE_THRES
 
 
 def _cosine(a: list[float], b: list[float]) -> float:
-    """Cosine similarity для уже нормализованных векторов = inner product."""
+    """Cosine similarity для нормализованных векторов = inner product."""
     return sum(x * y for x, y in zip(a, b))
 
 
+def _compute_db_version() -> str:
+    """Хеш текущего состояния БД. Используется для инвалидации кэша при изменении БД.
+
+    Берём от FAISS-стора если доступен, иначе от ChromaDB."""
+    try:
+        from rag.retriever import _get_faiss
+        store = _get_faiss()
+        if store is not None:
+            ids = store.get_all()[0]
+            sig = f"faiss|{len(ids)}|" + ",".join(sorted(ids)[:5]) + "..." + ",".join(sorted(ids)[-5:])
+            return hashlib.md5(sig.encode()).hexdigest()[:16]
+    except Exception:
+        pass
+
+    try:
+        from rag.retriever import _get_collection
+        col = _get_collection()
+        count = col.count()
+        return hashlib.md5(f"chroma|{count}".encode()).hexdigest()[:16]
+    except Exception:
+        return "unknown"
+
+
 class SemanticCache:
-    """Thread-safe семантический кэш с персистентностью на диск."""
+    """Thread-safe семантический кэш с инвалидацией по версии БД."""
 
     def __init__(
         self,
@@ -41,34 +70,55 @@ class SemanticCache:
         self._threshold = threshold
         self._max_size = max_size
         self._lock = threading.Lock()
-        # OrderedDict: key = question str, value = {embedding, result, ts}
         self._cache: OrderedDict[str, dict[str, Any]] = OrderedDict()
+        self._db_version: str | None = None
         self._load()
 
-    # ── persistence ──────────────────────────────────────────────────────────
+    def _ensure_db_version(self) -> str:
+        if self._db_version is None:
+            self._db_version = _compute_db_version()
+        return self._db_version
+
+    def refresh_db_version(self) -> None:
+        """Вызывать после загрузки новых документов."""
+        with self._lock:
+            self._db_version = _compute_db_version()
+
+    # ── persistence (атомарная запись через tmp+rename) ─────────────────────
 
     def _load(self) -> None:
         if self._path.exists():
             try:
                 with open(self._path, "rb") as f:
-                    self._cache = pickle.load(f)
-                # Убеждаемся что тип правильный после загрузки
+                    data = pickle.load(f)
+                if isinstance(data, dict) and "entries" in data:
+                    self._cache = data["entries"]
+                else:
+                    # Migration from old format (raw OrderedDict)
+                    if isinstance(data, OrderedDict) or isinstance(data, dict):
+                        # Эти записи без db_version → они потенциально протухли
+                        # Безопаснее очистить
+                        self._cache = OrderedDict()
                 if not isinstance(self._cache, OrderedDict):
                     self._cache = OrderedDict(self._cache)
             except Exception:
                 self._cache = OrderedDict()
 
     def _save(self) -> None:
+        """Вызывать только под self._lock."""
         try:
-            with open(self._path, "wb") as f:
-                pickle.dump(self._cache, f)
-        except Exception:
-            pass
+            tmp = self._path.with_suffix(".pkl.tmp")
+            with open(tmp, "wb") as f:
+                pickle.dump({"entries": self._cache, "format": 2}, f)
+            tmp.replace(self._path)
+        except Exception as e:
+            print(f"[CACHE] semantic cache save failed: {e}")
 
     # ── public API ────────────────────────────────────────────────────────────
 
     def get(self, question: str, embedding: list[float]) -> dict[str, Any] | None:
-        """Ищет кэшированный ответ. Возвращает result-dict или None при cache miss."""
+        """Cache hit только если db_version совпадает И similarity >= threshold."""
+        current_db = self._ensure_db_version()
         with self._lock:
             if not self._cache:
                 return None
@@ -76,40 +126,37 @@ class SemanticCache:
             best_sim = -1.0
             best_key: str | None = None
             for key, entry in self._cache.items():
+                if entry.get("db_version") != current_db:
+                    continue  # запись от старой версии БД — игнор
                 sim = _cosine(embedding, entry["embedding"])
                 if sim > best_sim:
                     best_sim = sim
                     best_key = key
 
             if best_sim >= self._threshold and best_key is not None:
-                # Переносим в конец (LRU — самый старый = начало)
                 self._cache.move_to_end(best_key)
                 entry = self._cache[best_key]
                 cached_result = dict(entry["result"])
-                # Кэшированный ответ не стримился сейчас — показываем как текст
                 cached_result["from_cache"] = True
                 cached_result["cache_similarity"] = round(best_sim, 4)
-                cached_result["streamed"] = False
+                cached_result["streamed"] = False  # текст не стримился, выведем заново
                 return cached_result
 
             return None
 
     def put(self, question: str, embedding: list[float], result: dict[str, Any]) -> None:
-        """Сохраняет ответ в кэш."""
+        """Сохраняет успешный ответ. has_answer=False не кэшируется."""
+        if not result.get("has_answer"):
+            return
+        current_db = self._ensure_db_version()
         with self._lock:
-            # Не кэшируем отказы и ошибки
-            if not result.get("has_answer"):
-                return
-
-            # Удаляем самую старую запись при переполнении
             while len(self._cache) >= self._max_size:
                 self._cache.popitem(last=False)
-
             self._cache[question] = {
-                "embedding": embedding,
-                "result": {k: v for k, v in result.items()
-                           if k not in ("streamed",)},
-                "ts": time.time(),
+                "embedding":  embedding,
+                "result":     {k: v for k, v in result.items() if k != "streamed"},
+                "ts":         time.time(),
+                "db_version": current_db,
             }
             self._cache.move_to_end(question)
             self._save()
@@ -119,13 +166,29 @@ class SemanticCache:
         with self._lock:
             return len(self._cache)
 
+    def valid_size(self) -> int:
+        """Сколько записей актуальны (db_version совпадает с текущей)."""
+        current = self._ensure_db_version()
+        with self._lock:
+            return sum(1 for e in self._cache.values() if e.get("db_version") == current)
+
     def clear(self) -> None:
         with self._lock:
             self._cache.clear()
             self._save()
 
+    def stats(self) -> dict[str, Any]:
+        current = self._ensure_db_version()
+        with self._lock:
+            return {
+                "total":       len(self._cache),
+                "valid":       sum(1 for e in self._cache.values() if e.get("db_version") == current),
+                "db_version":  current,
+                "threshold":   self._threshold,
+                "max_size":    self._max_size,
+            }
 
-# Глобальный синглтон — инициализируется один раз при импорте
+
 _cache: SemanticCache | None = None
 
 

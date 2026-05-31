@@ -66,6 +66,8 @@ def cmd_chat(args: argparse.Namespace) -> None:
     limiter = get_limiter()
     print("Интерактивный режим. Введите вопрос или 'выход'/'exit'/'q' для выхода.\n")
 
+    pending_question: str | None = None
+
     while True:
         try:
             question = input(">>> ").strip()
@@ -85,9 +87,22 @@ def cmd_chat(args: argparse.Namespace) -> None:
             continue
 
         print()
-        with limiter.concurrent_slot("localhost"):
-            result = ask(question, verbose=args.verbose)
+        if pending_question is not None:
+            effective_query = f"{pending_question}\n\nУточнение: {question}"
+            pending_question = None
+            with limiter.concurrent_slot("localhost"):
+                result = ask(effective_query, verbose=args.verbose, skip_clarifier=True)
+        else:
+            effective_query = question
+            with limiter.concurrent_slot("localhost"):
+                result = ask(effective_query, verbose=args.verbose)
+
         print(format_response(result))
+
+        if result.get("needs_clarification"):
+            pending_question = effective_query
+            print("(Введите уточнение к вашему вопросу выше)")
+
         print()
 
 

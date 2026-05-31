@@ -2,6 +2,7 @@
 .env
 *.env
 .env.*
+!.env.example
 
 # Данные и бинарники (не хранятся в репо)
 data/raw/
@@ -9,7 +10,8 @@ data/extracted/
 data/cleaned/
 data/chunks/
 data/chroma_db/
-data/faiss_db/
+# data/faiss_db/ — индекс в git (index.faiss + metadata.pkl, ~2.7 МБ)
+data/faiss_db/*.tmp
 data/images/
 data/embedding_cache.pkl
 data/semantic_cache.pkl

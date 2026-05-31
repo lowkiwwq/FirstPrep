@@ -137,7 +137,11 @@ def ask(
             if verbose:
                 print(f"  Classifier: status={cls['status']}, reason={cls['reason']}")
             if cls["status"] == "ambiguous":
-                return _ambiguous_response(cls["clarifying_questions"])
+                _peek = search_future.result()
+                if not any(c.get("score", 0) >= _EARLY_EXIT_SCORE for c in _peek):
+                    return _ambiguous_response(cls["clarifying_questions"])
+                if verbose:
+                    print(f"  Ambiguous overridden: strong retrieval hit, proceeding")
             if cls["status"] == "out_of_domain":
                 return _out_of_domain_response()
             search_query = cls["translated"]

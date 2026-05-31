@@ -1,21 +1,31 @@
 :root {
-  /* Colors */
-  --bg-main: #181819;
-  --bg-card: #111112;
-  --border-color: #28282c;
-  --accent: #FF4D1C;
-  --accent-hover: #ff6a42;
-  --accent-glow: #FF4D1C44;
-  --text-primary: #F0EDE8;
-  --text-secondary: #8A8A94;
-  
-  /* Gradients */
-  --gradient-accent: linear-gradient(90deg, #FF4D1C 0%, #FF2D6B 100%);
-  
-  /* Typography */
+  /* Enforced Design Tokens */
+  --bg:       #181819;
+  --bg2:      #111112;
+  --bg3:      #0d0d0e;
+  --surface:  #1e1e20;
+  --border:   #28282c;
+  --border2:  #333338;
+
+  --txt:      #F0EDE8;
+  --txt2:     #8A8A94;
+  --txt3:     #4E4E56;
+
+  --accent:   #FF4D1C;
+  --accent2:  #FF2D6B;
+  --accent3:  #FF8C42;
+
   --font-display: 'Syne', sans-serif;
   --font-body: 'DM Sans', sans-serif;
   --font-mono: 'DM Mono', monospace;
+
+  /* Backward Compatibility Mapping */
+  --bg-main: var(--bg);
+  --bg-card: var(--bg2);
+  --border-color: var(--border);
+  --text-primary: var(--txt);
+  --text-secondary: var(--txt2);
+  --gradient-accent: linear-gradient(90deg, var(--accent) 0%, var(--accent2) 100%);
 }
 
 * {
@@ -29,8 +39,8 @@ html {
 }
 
 body {
-  background-color: var(--bg-main);
-  color: var(--text-primary);
+  background-color: var(--bg);
+  color: var(--txt);
   font-family: var(--font-body);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
@@ -48,11 +58,11 @@ a {
   top: 0;
   left: 0;
   width: 100%;
-  height: 72px;
-  background: rgba(24, 24, 25, 0.7);
+  height: 60px;
+  background: rgba(24, 24, 25, 0.85);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border);
   z-index: 100;
   display: flex;
   align-items: center;
@@ -86,13 +96,13 @@ a {
 
 .nav-links a {
   font-size: 14px;
-  color: var(--text-secondary);
+  color: var(--txt2);
   transition: color 200ms ease;
   font-weight: 500;
 }
 
 .nav-links a:hover {
-  color: var(--text-primary);
+  color: var(--txt);
 }
 
 .btn {
@@ -120,24 +130,33 @@ a {
 }
 
 .btn-primary {
-  background: var(--accent);
-  color: #fff;
-  border: 1px solid var(--accent);
+  background: #FF4D1C;
+  color: #0d0d0e;
+  border-radius: 6px;
+  height: 40px;
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 14px;
+  border: none;
+  box-shadow: none;
 }
 
 .btn-primary:hover {
-  background: var(--accent-hover);
-  border-color: var(--accent-hover);
+  background: var(--accent2);
 }
 
 .btn-outline {
   background: transparent;
-  border: 1px solid var(--border-color);
-  color: var(--text-primary);
+  border: 1px solid #28282c;
+  color: #F0EDE8;
+  height: 40px;
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 14px;
 }
 
 .btn-outline:hover {
-  border-color: var(--text-secondary);
+  border-color: rgba(255, 77, 28, 0.27);
 }
 
 /* ================= Hero ================= */
@@ -516,7 +535,7 @@ a {
 /* ================= Mobile Nav & App View ================= */
 #app-view {
   min-height: 100vh;
-  padding-top: 72px; /* For fixed navbar */
+  padding-top: 60px; /* For fixed navbar */
 }
 
 .nav-links a.active, .mobile-nav-links a.active {
@@ -545,7 +564,7 @@ a {
 
 .mobile-menu {
   position: fixed;
-  top: 72px;
+  top: 60px;
   left: 0;
   width: 100%;
   background: var(--bg-main);
@@ -696,7 +715,7 @@ a {
 /* ================= Course Detail (Stepik-like) ================= */
 .course-detail-layout {
   display: flex;
-  height: calc(100vh - 72px);
+  height: calc(100vh - 60px);
 }
 
 .lesson-sidebar {
@@ -707,13 +726,17 @@ a {
 }
 
 .lesson-section {
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border);
 }
 
 .lesson-section-header {
   padding: 16px;
-  font-weight: 600;
-  font-size: 14px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  color: #8A8A94;
+  letter-spacing: 0.12em;
+  font-weight: 500;
   background: rgba(255,255,255,0.02);
 }
 
@@ -727,12 +750,12 @@ a {
 }
 
 .lesson-row:hover {
-  background: rgba(255,255,255,0.05);
+  background: #ffffff06;
 }
 
 .lesson-row.active {
-  background: rgba(255, 77, 28, 0.1);
-  border-left: 2px solid var(--accent);
+  border-left: 2px solid #FF4D1C;
+  background: #FF4D1C08;
 }
 
 .lesson-icon {
@@ -916,7 +939,7 @@ a {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: calc(100vh - 72px);
+  min-height: calc(100vh - 60px);
   padding: 24px;
 }
 
@@ -1115,29 +1138,40 @@ a {
 
 .chatbot-panel {
   position: fixed;
-  top: 72px;
-  right: 0;
-  height: calc(100vh - 72px);
-  width: 320px;
-  background: var(--bg-card);
-  border-left: 1px solid var(--border-color);
+  bottom: 96px;
+  right: 32px;
+  height: 500px;
+  max-height: calc(100vh - 140px);
+  width: 360px;
+  background: rgba(17, 17, 18, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
   z-index: 1001;
-  transform: translateX(100%);
-  transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+  opacity: 0;
+  transform: scale(0.8) translateY(24px);
+  pointer-events: none;
+  transition: all 450ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .chatbot-panel.open {
-  transform: translateX(0);
+  opacity: 1;
+  transform: scale(1) translateY(0);
+  pointer-events: all;
 }
 
 .chatbot-header {
-  padding: 16px 24px;
+  padding: 16px 20px;
   border-bottom: 1px solid var(--border-color);
   display: flex;
   justify-content: space-between;
   align-items: center;
+  background: rgba(255, 255, 255, 0.02);
 }
 
 .chatbot-title {
@@ -1146,13 +1180,16 @@ a {
   display: flex;
   align-items: center;
   gap: 8px;
+  color: var(--text-primary);
+  font-size: 15px;
 }
 
 .status-dot {
   width: 8px;
   height: 8px;
-  background: #2ed573;
+  background: #FF8C42;
   border-radius: 50%;
+  box-shadow: 0 0 8px #FF8C42;
 }
 
 .chatbot-close {
@@ -1161,21 +1198,26 @@ a {
   color: var(--text-secondary);
   cursor: pointer;
   font-size: 16px;
+  transition: color 200ms ease;
+}
+
+.chatbot-close:hover {
+  color: var(--accent);
 }
 
 .chatbot-messages {
   flex: 1;
-  padding: 24px;
+  padding: 20px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
 }
 
 .message {
   display: flex;
-  gap: 12px;
-  max-width: 90%;
+  gap: 10px;
+  max-width: 85%;
 }
 
 .message.ai {
@@ -1198,37 +1240,53 @@ a {
   justify-content: center;
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: 12px;
+  font-size: 11px;
   flex-shrink: 0;
 }
 
-.message.user .msg-bubble {
-  background: rgba(255, 255, 255, 0.1);
+.msg-bubble {
+  padding: 10px 14px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-primary);
 }
 
-.msg-bubble {
-  background: rgba(255, 77, 28, 0.1);
-  padding: 12px 16px;
-  border-radius: 8px;
-  font-size: 14px;
-  line-height: 1.5;
+.message.ai .msg-bubble {
+  background: rgba(255, 77, 28, 0.06);
+  border: 1px solid rgba(255, 77, 28, 0.15);
+  border-radius: 14px 14px 14px 2px;
+}
+
+.message.user .msg-bubble {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px 14px 2px 14px;
 }
 
 .chatbot-input {
-  padding: 16px;
+  padding: 12px 16px;
   border-top: 1px solid var(--border-color);
-  background: var(--bg-main);
+  background: rgba(0, 0, 0, 0.25);
   display: flex;
-  gap: 12px;
+  gap: 10px;
+  align-items: center;
 }
 
 .chatbot-input input {
   flex: 1;
-  background: transparent;
-  border: none;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
   color: var(--text-primary);
   font-family: var(--font-body);
   outline: none;
+  padding: 8px 16px;
+  font-size: 13px;
+  transition: border-color 200ms ease;
+}
+
+.chatbot-input input:focus {
+  border-color: rgba(255, 77, 28, 0.35);
 }
 
 .send-btn {
@@ -1237,4 +1295,647 @@ a {
   color: var(--accent);
   cursor: pointer;
   font-size: 18px;
+  transition: transform 200ms ease, color 200ms ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.send-btn:hover {
+  transform: scale(1.1);
+  color: var(--accent3);
+}
+
+/* ================= Enforced Badges ================= */
+.badge-video {
+  color: #FF4D1C !important;
+  border: 1px solid rgba(255, 77, 28, 0.27) !important;
+}
+
+.badge-assignment {
+  color: #FF2D6B !important;
+  border: 1px solid rgba(255, 45, 107, 0.27) !important;
+}
+
+.badge-experiment {
+  color: #FF8C42 !important;
+  border: 1px solid rgba(255, 140, 66, 0.27) !important;
+}
+
+.badge-tip {
+  color: #FF8C42 !important;
+  border: 1px solid rgba(255, 140, 66, 0.27) !important;
+}
+
+.badge-live {
+  color: #FF2D6B !important;
+  border: 1px solid rgba(255, 45, 107, 0.27) !important;
+}
+
+.badge-video, .badge-assignment, .badge-experiment, .badge-tip, .badge-live {
+  background: transparent !important;
+  font-family: var(--font-mono) !important;
+  font-size: 10px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.12em !important;
+  text-transform: uppercase !important;
+  border-radius: 4px !important;
+  padding: 3px 8px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  width: fit-content !important;
+}
+
+/* ================= LIVE badge pulsing dot ================= */
+.live-pulse-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background-color: #FF2D6B;
+  border-radius: 50%;
+  margin-right: 6px;
+  animation: liveBadgePulse 1.5s infinite;
+}
+
+@keyframes liveBadgePulse {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.3);
+    opacity: 1;
+    box-shadow: 0 0 8px #FF2D6B;
+  }
+  100% {
+    transform: scale(0.9);
+    opacity: 0.6;
+  }
+}
+
+/* ================= Locked Lessons & CSS Tooltip ================= */
+.lesson-row.locked {
+  opacity: 0.4 !important;
+  cursor: not-allowed !important;
+  pointer-events: auto !important; /* Keep auto so hover tooltip works */
+}
+
+.lesson-row.locked * {
+  pointer-events: none !important; /* Disable clicking internally */
+}
+
+.lesson-row.locked .lesson-icon {
+  color: #4E4E56 !important;
+}
+
+.locked-tooltip {
+  position: relative;
+}
+
+.locked-tooltip:hover::after {
+  content: "Скоро — раздел в разработке";
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1e1e20;
+  border: 1px solid #28282c;
+  color: #8A8A94;
+  font-family: var(--font-body);
+  font-size: 12px;
+  padding: 6px 12px;
+  border-radius: 4px;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 999;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+/* ================= Video Cards ================= */
+.video-placeholder-card {
+  position: relative;
+  background: #111112;
+  border: 1px solid #28282c;
+  border-radius: 8px;
+  width: 100%;
+  aspect-ratio: 16/9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  margin-bottom: 40px;
+}
+
+.video-placeholder-card .play-btn-circle {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #FF4D1C;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 200ms ease, background 200ms ease;
+  z-index: 2;
+  border: none;
+}
+
+.video-placeholder-card .play-btn-circle:hover {
+  transform: scale(1.1);
+  background: var(--accent2);
+}
+
+.video-placeholder-card .play-icon-svg {
+  width: 14px;
+  height: 16px;
+  fill: #0d0d0e;
+  margin-left: 2px;
+}
+
+.video-placeholder-card .duration-badge {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: #8A8A94;
+  z-index: 2;
+}
+
+.video-placeholder-card .top-left-tag {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 2;
+}
+
+/* ================= Experiment Cards ================= */
+.experiment-placeholder-card {
+  position: relative;
+  background: #111112;
+  border: 1px solid #28282c;
+  border-radius: 8px;
+  width: 100%;
+  aspect-ratio: 16/9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  margin-bottom: 40px;
+}
+
+.experiment-placeholder-card .flask-icon-svg {
+  width: 48px;
+  height: 48px;
+  fill: #FF8C42;
+  z-index: 2;
+}
+
+.experiment-placeholder-card .top-left-tag {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 2;
+}
+
+/* ================= Recommendation Cards ================= */
+.recommendation-placeholder-card {
+  position: relative;
+  background: #111112;
+  border: 1px solid #28282c;
+  border-radius: 8px;
+  width: 100%;
+  aspect-ratio: 16/9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  margin-bottom: 40px;
+}
+
+.recommendation-placeholder-card .strategy-icon-svg {
+  width: 48px;
+  height: 48px;
+  fill: #FF8C42;
+  z-index: 2;
+}
+
+.recommendation-placeholder-card .top-left-tag {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 2;
+}
+
+/* Font override enforcement for all headings */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display) !important;
+  font-weight: 800 !important;
+}
+
+/* Ensure DM Mono on meta elements */
+.catalog-meta, .test-meta, .lesson-duration, .stat-number, .hero-stats {
+  font-family: var(--font-mono) !important;
+}
+
+/* ================= FTC Code Lab Styles ================= */
+.ftc-codelab-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  height: calc(100vh - 180px);
+  min-height: 600px;
+}
+
+.codelab-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 12px;
+}
+
+.codelab-title {
+  font-family: var(--font-display) !important;
+  font-weight: 600 !important;
+  font-size: 20px;
+  color: #F0EDE8;
+}
+
+.codelab-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.codelab-buttons button {
+  font-family: var(--font-mono) !important;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Exercise chips */
+.exercise-chips-row {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.exercise-chip {
+  font-family: var(--font-mono) !important;
+  font-size: 11px;
+  border: 1px solid var(--border);
+  background: transparent;
+  padding: 6px 12px;
+  border-radius: 16px;
+  cursor: pointer;
+  color: var(--txt2);
+  transition: all 200ms ease;
+  white-space: nowrap;
+}
+
+.exercise-chip:hover {
+  border-color: rgba(255, 77, 28, 0.27);
+  color: var(--txt);
+}
+
+.exercise-chip.active {
+  border-color: var(--accent);
+  background: rgba(255, 77, 28, 0.08);
+  color: var(--txt);
+}
+
+/* Panels */
+.codelab-panels {
+  display: flex;
+  gap: 16px;
+  flex: 1;
+  min-height: 480px;
+  width: 100%;
+}
+
+.codelab-panel {
+  background: #111112;
+  border: 1px solid #28282c;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  height: 100%;
+}
+
+.left-panel {
+  flex: 40; /* 40% */
+  width: 40%;
+}
+
+.center-panel {
+  flex: 35; /* 35% */
+  width: 35%;
+}
+
+.right-panel {
+  flex: 25; /* 25% */
+  width: 25%;
+}
+
+.codelab-panel .panel-header {
+  font-family: var(--font-mono) !important;
+  font-size: 11px;
+  text-transform: uppercase;
+  color: #8A8A94;
+  border-bottom: 1px solid #28282c;
+  padding: 10px 16px;
+  letter-spacing: 0.1em;
+  font-weight: 500;
+  user-select: none;
+  background: #111112;
+}
+
+.codelab-panel .panel-body {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  background: #0d0d0e;
+  height: calc(100% - 38px);
+}
+
+.canvas-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  height: 100%;
+}
+
+#sim-canvas {
+  background: #0d0d0e;
+  border: 2px solid #28282c;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  display: block;
+}
+
+/* Right Panel Tabs */
+.panel-tabs {
+  display: flex;
+  border-bottom: 1px solid #28282c;
+  background: #111112;
+}
+
+.panel-tab {
+  font-family: var(--font-mono) !important;
+  font-size: 11px;
+  text-transform: uppercase;
+  color: #8A8A94;
+  padding: 10px 20px;
+  cursor: pointer;
+  user-select: none;
+  transition: all 200ms ease;
+  border-bottom: 2px solid transparent;
+}
+
+.panel-tab:hover {
+  color: var(--txt);
+}
+
+.panel-tab.active {
+  color: var(--txt);
+  border-bottom-color: #FF4D1C;
+}
+
+.tab-content-wrapper {
+  padding: 16px;
+  overflow-y: auto;
+  height: calc(100% - 37px);
+  background: #0d0d0e;
+}
+
+.tab-content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.tab-content.scrollable {
+  overflow-y: auto;
+}
+
+/* Console logs */
+.console-log-line {
+  font-family: var(--font-mono) !important;
+  font-size: 12px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  margin-bottom: 4px;
+}
+
+.console-system {
+  color: #4E4E56;
+}
+
+.console-robot {
+  color: #F0EDE8;
+}
+
+.console-error {
+  color: #FF2D6B;
+}
+
+.console-success {
+  color: #FF8C42;
+}
+
+/* Test rows */
+.test-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 0;
+  border-bottom: 1px solid #1e1e20;
+}
+
+.test-row-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.test-status-icon {
+  font-weight: bold;
+}
+
+.test-status-pass {
+  color: #FF8C42;
+}
+
+.test-status-fail {
+  color: #FF2D6B;
+}
+
+.test-name {
+  font-family: var(--font-body) !important;
+  font-size: 13px;
+  font-weight: 500 !important;
+}
+
+.test-desc {
+  font-family: var(--font-mono) !important;
+  font-size: 11px;
+  color: #8A8A94;
+  padding-left: 20px;
+}
+
+.score-badge-container {
+  margin-top: auto;
+  padding-top: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.score-badge {
+  font-family: var(--font-display) !important;
+  font-weight: 700 !important;
+  font-size: 14px;
+  padding: 8px 16px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* Blocks editor workspace */
+.blocks-editor-workspace {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: #0d0d0e;
+}
+
+.blocks-toolbox {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding: 12px;
+  background: #111112;
+  border-bottom: 1px solid #28282c;
+}
+
+.blocks-toolbox-btn {
+  font-family: var(--font-mono) !important;
+  font-size: 10px;
+  padding: 5px 10px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--txt2);
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.blocks-toolbox-btn:hover {
+  border-color: rgba(255, 77, 28, 0.27);
+  color: var(--txt);
+}
+
+.blocks-workspace-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.block-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: #111112;
+  border: 1px solid #28282c;
+  font-family: var(--font-mono) !important;
+  font-size: 12px;
+  transition: all 150ms ease;
+}
+
+.block-item.active-block {
+  border-color: var(--accent);
+  background: rgba(255, 77, 28, 0.06);
+}
+
+.block-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.block-item input, .block-item select {
+  background: #0d0d0e;
+  border: 1px solid #28282c;
+  color: var(--txt);
+  font-family: var(--font-mono) !important;
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  width: 60px;
+  text-align: center;
+}
+
+.block-item select {
+  width: auto;
+}
+
+.block-delete-btn {
+  background: transparent;
+  border: none;
+  color: #4E4E56;
+  cursor: pointer;
+  font-size: 12px;
+  transition: color 150ms ease;
+  padding: 0 4px;
+}
+
+.block-delete-btn:hover {
+  color: #FF2D6B;
+}
+
+.blocks-code-preview {
+  background: #111112;
+  border-top: 1px solid #28282c;
+  padding: 12px 16px;
+  font-family: var(--font-mono) !important;
+  font-size: 11px;
+  color: #8A8A94;
+  max-height: 120px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+}
+
+/* Monaco line highlight custom override */
+.monaco-line-highlight {
+  background-color: rgba(255, 77, 28, 0.08) !important;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+  .ftc-codelab-container {
+    height: auto;
+  }
+  
+  .codelab-panels {
+    flex-direction: column;
+    min-height: auto;
+  }
+  
+  .left-panel, .center-panel, .right-panel {
+    flex: none;
+    width: 100%;
+    height: 450px;
+  }
 }

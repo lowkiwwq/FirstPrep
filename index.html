@@ -66,19 +66,12 @@
     <div class="chatbot-messages">
       <div class="message ai">
         <div class="avatar" style="background-color: #FF4D1C;">P</div>
-        <div class="msg-bubble">Привет! Я Phoenix AI — помогу с подготовкой к FTC. Спроси про механику робота, программирование на Java, или как оформить Engineering Portfolio.</div>
-      </div>
-      <div class="message user">
-        <div class="msg-bubble">Что судьи смотрят в Portfolio?</div>
-      </div>
-      <div class="message ai">
-        <div class="avatar" style="background-color: #FF4D1C;">P</div>
-        <div class="msg-bubble">Судьи оценивают дизайн робота, процесс создания (Engineering Design Process), командные цели, бизнес-план и Outreach-активности.</div>
+        <div class="msg-bubble">Привет! Я Phoenix AI — помогу с подготовкой к FTC. Спроси про правила соревнований, механику, программирование или документацию.</div>
       </div>
     </div>
     <div class="chatbot-input">
-      <input type="text" placeholder="Задай вопрос...">
-      <button class="send-btn">➤</button>
+      <input type="text" id="chatbot-input-field" placeholder="Задай вопрос...">
+      <button class="send-btn" id="chatbot-send-btn">➤</button>
     </div>
   </div>
 
@@ -89,5 +82,6 @@
   <script src="views.js?v=5"></script>
   <script src="main.js?v=5"></script>
   <script src="router.js?v=5"></script>
+  <script src="chatbot.js?v=1"></script>
 </body>
 </html>

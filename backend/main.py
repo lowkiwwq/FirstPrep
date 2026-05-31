@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import auth, courses, tests, dashboard, progress
+from routers import auth, courses, tests, dashboard, progress, rag
 
 app = FastAPI(title="Phoenix Forge API", version="1.0.0")
 
@@ -17,6 +17,7 @@ app.include_router(courses.router, tags=["courses"])
 app.include_router(tests.router, tags=["tests"])
 app.include_router(dashboard.router, tags=["dashboard"])
 app.include_router(progress.router, tags=["progress"])
+app.include_router(rag.router)
 
 @app.get("/health")
 def health():

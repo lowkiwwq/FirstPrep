@@ -1,0 +1,509 @@
+Conflicts in views.js:
+
+Line 598: Conflict Start
+  593:     <header class="hero" style="position:relative;overflow:hidden;">
+  594:       <div id="antigravity-container" style="position:absolute;left:0;top:0;width:100%;height:100%;z-index:0;pointer-events:none;"></div>
+  595:       <div class="hero-container animate-item" style="position:relative;z-index:1;">
+  596:         <div class="hero-content-wrapper">
+  597:           <h1 class="hero-title">
+>>>>> CONFLICT CONTENT START >>>>>
+  598: <<<<<<< HEAD
+  599:           <span class="hero-line1" style="color: white;">Собери. Запрограммируй.</span>
+  600:           <span class="hero-line2" style="background: linear-gradient(to right, #FF4D1C, #FF2D6B); -webkit-background-clip: text; color: transparent;">Победи на FTC.</span>
+  601:         </h1>
+  602:         <div class="hero-stats" style="font-family: 'DM Mono', monospace;">
+  603:           <div class="stat-item"><span class="stat-number" data-target="500">0</span>+ участников</div>
+  604:           <div class="stat-divider"></div>
+  605:           <div class="stat-item"><span class="stat-number" data-target="7">0</span> курсов</div>
+  606:           <div class="stat-divider"></div>
+  607:           <div class="stat-item">World Championship</div>
+  608:         </div>
+  609:         <div class="hero-buttons">
+  610:           <a href="#/courses" class="btn btn-primary">Начать подготовку</a>
+  611:           <a href="#/features" class="btn btn-outline">Что такое FTC?</a>
+  612:         </div>
+  613: =======
+  614:             <span class="hero-line1" style="color:white;">Собери. Запрограммируй.</span>
+  615:             <span class="hero-line2" style="background:linear-gradient(to right,#FF4D1C,#FF2D6B);-webkit-background-clip:text;color:transparent;">Победи на FTC.</span>
+  616:           </h1>
+  617:           <div class="hero-stats" style="font-family:'DM Mono',monospace;">
+  618:             <div class="stat-item"><span class="stat-number" data-target="500">0</span>+ участников</div>
+  619:             <div class="stat-divider"></div>
+  620:             <div class="stat-item"><span class="stat-number" data-target="3">0</span> курса</div>
+  621:             <div class="stat-divider"></div>
+  622:             <div class="stat-item">World Championship</div>
+  623:           </div>
+  624:           <div class="hero-buttons">
+  625:             <a href="#/courses" class="btn btn-primary">Начать подготовку</a>
+  626:             <a href="#/features" class="btn btn-outline">Что такое FTC?</a>
+  627:           </div>
+  628: >>>>>>> 80e2adf28a8e7693cb2ebd8d95f2dee06c77d205
+<<<<< CONFLICT CONTENT END <<<<<
+  629:         </div>
+  630:         <img src="phoenix_transparent.png?v=2" alt="Phoenix" class="hero-phoenix-img">
+  631:       </div>
+  632:     </header>
+  633: 
+
+Line 700: Conflict Start
+  695:     </section>
+  696: 
+  697:     <section id="reviews" class="reviews animate-item">
+  698:       <div class="ticker-wrapper">
+  699:         <div class="ticker">
+>>>>> CONFLICT CONTENT START >>>>>
+  700: <<<<<<< HEAD
+  701:           <div class="review-card"><p class="review-quote">"Структура курса просто идеальная. Ничего лишнего."</p><div class="review-author"><span class="author-name">Алексей С.</span><span class="author-score">FTC Капитан</span></div></div>
+  702:           <div class="review-card"><p class="review-quote">"Инженерная часть — топ. Наконец-то понял, как правильно рассчитывать крутящий момент."</p><div class="review-author"><span class="author-name">Мария В.</span><span class="author-score">Инженер-конструктор</span></div></div>
+  703:           <div class="review-card"><p class="review-quote">"Собрали Mecanum дриветрейн за два дня благодаря видеоурокам от Марка."</p><div class="review-author"><span class="author-name">Иван Д.</span><span class="author-score">Драйвер команды</span></div></div>
+  704:           <div class="review-card"><p class="review-quote">"Лучшее вложение времени и средств в этом сезоне."</p><div class="review-author"><span class="author-name">Елена К.</span><span class="author-score">Ментор FTC</span></div></div>
+  705:           <!-- Duplicates for infinite scroll -->
+  706:           <div class="review-card"><p class="review-quote">"Структура курса просто идеальная. Ничего лишнего."</p><div class="review-author"><span class="author-name">Алексей С.</span><span class="author-score">FTC Капитан</span></div></div>
+  707:           <div class="review-card"><p class="review-quote">"Инженерная часть — топ. Наконец-то понял, как правильно рассчитывать крутящий момент."</p><div class="review-author"><span class="author-name">Мария В.</span><span class="author-score">Инженер-конструктор</span></div></div>
+  708:           <div class="review-card"><p class="review-quote">"Собрали Mecanum дриветрейн за два дня благодаря видеоурокам от Марка."</p><div class="review-author"><span class="author-name">Иван Д.</span><span class="author-score">Драйвер команды</span></div></div>
+  709:           <div class="review-card"><p class="review-quote">"Лучшее вложение времени и средств в этом сезоне."</p><div class="review-author"><span class="author-name">Елена К.</span><span class="author-score">Ментор FTC</span></div></div>
+  710: =======
+  711:           <div class="review-card"><p class="review-quote">"Структура курса просто идеальная. Ничего лишнего."</p><div class="review-author"><span class="author-name">Алексей С.</span><span class="author-score">Junior → Middle</span></div></div>
+  712:           <div class="review-card"><p class="review-quote">"Менторы помогли подготовиться к секции алгоритмов в Яндекс."</p><div class="review-author"><span class="author-name">Мария В.</span><span class="author-score">Оффер в BigTech</span></div></div>
+  713:           <div class="review-card"><p class="review-quote">"Инженерная часть — топ. Наконец-то понял как работают сети."</p><div class="review-author"><span class="author-name">Иван Д.</span><span class="author-score">+45% к ЗП</span></div></div>
+  714:           <div class="review-card"><p class="review-quote">"Лучшее вложение времени и средств в этом году."</p><div class="review-author"><span class="author-name">Елена К.</span><span class="author-score">Успешная смена профессии</span></div></div>
+  715:           <div class="review-card"><p class="review-quote">"Структура курса просто идеальная. Ничего лишнего."</p><div class="review-author"><span class="author-name">Алексей С.</span><span class="author-score">Junior → Middle</span></div></div>
+  716:           <div class="review-card"><p class="review-quote">"Менторы помогли подготовиться к секции алгоритмов в Яндекс."</p><div class="review-author"><span class="author-name">Мария В.</span><span class="author-score">Оффер в BigTech</span></div></div>
+  717:           <div class="review-card"><p class="review-quote">"Инженерная часть — топ. Наконец-то понял как работают сети."</p><div class="review-author"><span class="author-name">Иван Д.</span><span class="author-score">+45% к ЗП</span></div></div>
+  718:           <div class="review-card"><p class="review-quote">"Лучшее вложение времени и средств в этом году."</p><div class="review-author"><span class="author-name">Елена К.</span><span class="author-score">Успешная смена профессии</span></div></div>
+  719: >>>>>>> 80e2adf28a8e7693cb2ebd8d95f2dee06c77d205
+<<<<< CONFLICT CONTENT END <<<<<
+  720:         </div>
+  721:       </div>
+  722:     </section>
+  723: 
+  724:     <footer class="footer animate-item">
+
+Line 734: Conflict Start
+  729:         <p class="footer-legal">© 2026 Phoenix Forge. Все права защищены.</p>
+  730:       </div>
+  731:     </footer>
+  732:   `,
+  733: 
+>>>>> CONFLICT CONTENT START >>>>>
+  734: <<<<<<< HEAD
+  735:   renderCourses: () => {
+  736:     const sidebarHtml = `
+  737:       <aside class="sidebar">
+  738:         <div class="sidebar-section">
+  739:           <h4 class="sidebar-title">Категория</h4>
+  740:           <label class="filter-label"><input type="checkbox" class="filter-checkbox" data-group="category" data-value="intro"> Введение</label>
+  741:           <label class="filter-label"><input type="checkbox" class="filter-checkbox" data-group="category" data-value="cad"> CAD</label>
+  742:           <label class="filter-label"><input type="checkbox" class="filter-checkbox" data-group="category" data-value="build"> Билд</label>
+  743:           <label class="filter-label"><input type="checkbox" class="filter-checkbox" data-group="category" data-value="coding"> Код</label>
+  744:           <label class="filter-label"><input type="checkbox" class="filter-checkbox" data-group="category" data-value="gamedrive"> Гейм-драйв</label>
+  745:           <label class="filter-label"><input type="checkbox" class="filter-checkbox" data-group="category" data-value="inspire"> Инспаир</label>
+  746:           <label class="filter-label"><input type="checkbox" class="filter-checkbox" data-group="category" data-value="season"> О сезоне</label>
+  747:         </div>
+  748:         <div class="sidebar-section">
+  749:           <h4 class="sidebar-title">Сложность</h4>
+  750:           <label class="filter-label"><input type="checkbox" class="filter-checkbox" data-group="difficulty" data-value="beginner"> Beginner</label>
+  751:           <label class="filter-label"><input type="checkbox" class="filter-checkbox" data-group="difficulty" data-value="intermediate"> Intermediate</label>
+  752:           <label class="filter-label"><input type="checkbox" class="filter-checkbox" data-group="difficulty" data-value="advanced"> Advanced</label>
+  753:         </div>
+  754:         <div class="sidebar-section">
+  755:           <h4 class="sidebar-title">Статус</h4>
+  756:           <label class="filter-label"><input type="checkbox" class="filter-checkbox" data-group="status" data-value="inprogress"> В процессе</label>
+  757:           <label class="filter-label"><input type="checkbox" class="filter-checkbox" data-group="status" data-value="completed"> Завершенные</label>
+  758:         </div>
+  759:       </aside>
+  760:     `;
+  761: 
+  762:     // 7 Standalone courses in the exact grid order
+  763:     const courseSlugs = ['intro', 'cad', 'build', 'coding', 'gamedrive', 'inspire', 'season'];
+  764: 
+  765:     let gridHtml = '';
+  766:     courseSlugs.forEach(slug => {
+  767:       const course = window.CoursesData[slug];
+  768:       const count = course.lessonCount;
+  769:       const countText = count === 1 ? '1 урок' :
+  770:                         (count % 10 >= 2 && count % 10 <= 4 && (count % 100 < 10 || count % 100 >= 20)) ? `${count} урока` :
+  771:                         `${count} уроков`;
+  772: 
+  773:       let tagClass = 'badge-video';
+  774:       if (slug === 'build') tagClass = 'badge-experiment';
+  775:       else if (slug === 'coding') tagClass = 'badge-assignment';
+  776:       else if (slug === 'gamedrive') tagClass = 'badge-tip';
+  777:       else if (slug === 'season') tagClass = 'badge-live';
+  778: 
+  779:       // Map dynamic difficulty for filtering
+  780:       let difficulty = 'beginner';
+  781:       if (slug === 'cad' || slug === 'build' || slug === 'gamedrive') {
+  782:         difficulty = 'intermediate';
+  783:       } else if (slug === 'coding') {
+  784:         difficulty = 'advanced';
+  785:       }
+  786: 
+  787:       gridHtml += `
+  788:         <div class="catalog-card" data-category="${slug}" data-difficulty="${difficulty}" data-progress="${course.progress}">
+  789:           <div class="catalog-thumb" style="height: 140px; background: #202022; border-bottom: 1px solid var(--border); position: relative; padding: 16px;">
+  790:             <span class="${tagClass}" style="position: absolute; top: 16px; left: 16px;">
+  791:               ${slug === 'season' ? '<span class="live-pulse-dot"></span>' : ''}${course.tag}
+  792:             </span>
+  793:           </div>
+  794:           <div class="catalog-info" style="padding: 24px; display: flex; flex-direction: column; gap: 12px; flex: 1;">
+  795:             <h3 class="catalog-title" style="font-family: var(--font-display); font-size: 20px; font-weight: 800;">${course.title}</h3>
+  796:             <p style="font-family: var(--font-body); font-size: 14px; color: var(--txt2); line-height: 1.5; margin-bottom: 8px;">${course.desc}</p>
+  797:             <div class="catalog-meta" style="font-family: var(--font-mono); font-size: 13px; color: #8A8A94; margin-top: auto;">${countText}</div>
+  798:             
+  799:             <div class="progress-bar-container" style="height: 2px; background: #28282c; width: 100%; margin: 8px 0; border-radius: 2px;">
+  800:               <div class="progress-bar" style="width: ${course.progress}%; height: 100%; background: linear-gradient(90deg, #FF4D1C, #FF2D6B); border-radius: 2px;"></div>
+  801:             </div>
+  802:             
+  803:             <a href="#/courses/${slug}" class="btn btn-outline btn-full">Начать</a>
+  804:           </div>
+  805:         </div>
+  806:       `;
+  807:     });
+  808: 
+  809:     return `
+  810:       <div class="page-layout animate-item">
+  811:         ${sidebarHtml}
+  812:         <main class="main-content">
+  813:           <h2 class="page-heading" style="font-family: var(--font-display); font-size: 32px; font-weight: 800; margin-bottom: 32px;">Каталог курсов</h2>
+  814:           <div class="catalog-grid">
+  815:             ${gridHtml}
+  816:           </div>
+  817:         </main>
+  818:       </div>
+  819:     `;
+  820:   },
+  821: 
+  822:   renderCourseDetail: (courseSlug) => {
+  823:     const course = window.CoursesData[courseSlug];
+  824:     if (!course) return `<div class="course-detail-layout animate-item"><p>Курс не найден.</p></div>`;
+  825: 
+  826:     // Retrieve last selected active lesson, or default to the first unlocked lesson
+  827:     let activeState = window.ActiveLessonsState[courseSlug];
+  828:     if (!activeState) {
+  829:       // Find first unlocked section and active lesson
+  830:       let foundSec = 0;
+  831:       for (let s = 0; s < course.sections.length; s++) {
+  832:         if (!course.sections[s].locked) {
+  833:           foundSec = s;
+  834:           break;
+  835:         }
+  836:       }
+  837:       activeState = { secIdx: foundSec, lesIdx: 0 };
+  838:       window.ActiveLessonsState[courseSlug] = activeState;
+  839:     }
+  840: 
+  841:     const { secIdx: activeSecIdx, lesIdx: activeLesIdx } = activeState;
+  842: 
+  843:     let sidebarHtml = '';
+  844:     course.sections.forEach((section, secIdx) => {
+  845:       if (section.locked) {
+  846:         // Locked Section Header & Locked Row (Opacity 0.4, cursor, lock icon, and CSS tooltip)
+  847:         sidebarHtml += `
+  848:           <div class="lesson-section locked-tooltip">
+  849:             <div class="lesson-section-header" style="font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; color: #8A8A94; letter-spacing: 0.12em;">
+  850:               ${secIdx + 1}. ${section.title}
+  851:             </div>
+  852:             <div class="lesson-row locked">
+  853:               <span class="lesson-icon" style="color: #4E4E56;">🔒</span>
+  854:               <span class="lesson-title" style="font-family: var(--font-body); font-size: 14px;">Скоро — раздел в разработке</span>
+  855:             </div>
+  856:           </div>
+  857:         `;
+  858:       } else {
+  859:         sidebarHtml += `
+  860:           <div class="lesson-section">
+  861:             <div class="lesson-section-header" style="font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; color: #8A8A94; letter-spacing: 0.12em;">
+  862:               ${secIdx + 1}. ${section.title}
+  863:             </div>
+  864:         `;
+  865:         section.lessons.forEach((lesson, lesIdx) => {
+  866:           const isActive = (secIdx === activeSecIdx && lesIdx === activeLesIdx);
+  867:           const isLab = (courseSlug === 'coding' && (lesson.id === '1.2' || lesson.id === '2.2' || lesson.id === '3.4' || lesson.type === 'ЗАДАНИЕ'));
+  868:           
+  869:           let icon = '📄';
+  870:           if (isLab) {
+  871:             icon = `<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;color:#FF2D6B;"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>`;
+  872:           } else if (lesson.type === 'VIDEO') {
+  873:             icon = '▶';
+  874:           } else if (lesson.type === 'ЗАДАНИЕ') {
+  875:             icon = '📝';
+  876:           } else if (lesson.type === 'ЭКСПЕРИМЕНТ') {
+  877:             icon = '🧪';
+  878:           } else if (lesson.type === 'СОВЕТ' || lesson.type === 'СТРАТЕГИЯ') {
+  879:             icon = '⭐';
+  880:           } else if (lesson.type === 'LIVE') {
+  881:             icon = '📡';
+  882:           }
+  883: 
+  884:           sidebarHtml += `
+  885:             <div class="lesson-row ${isActive ? 'active' : ''}" onclick="window.selectLesson('${courseSlug}', ${secIdx}, ${lesIdx})">
+  886:               <span class="lesson-icon" style="display:flex;align-items:center;justify-content:center;width:16px;height:16px;flex-shrink:0;">${icon}</span>
+  887:               <span class="lesson-title" style="font-family: var(--font-body); font-size: 14px; display:flex; align-items:center; gap:6px; flex:1;">
+  888:                 ${lesson.id} ${lesson.title}
+  889:                 ${isLab ? `<span style="font-family: var(--font-mono); font-size: 9px; color: #FF2D6B; border: 1px solid rgba(255, 45, 107, 0.27); padding: 1px 4px; border-radius: 3px; font-weight: 500; letter-spacing:0.02em; flex-shrink: 0; background: rgba(255, 45, 107, 0.05);">LAB</span>` : ''}
+  890:               </span>
+  891:               ${lesson.duration ? `<span class="lesson-duration" style="font-family: var(--font-mono); font-size: 11px; color: var(--txt2); flex-shrink:0;">${lesson.duration}</span>` : ''}
+  892:             </div>
+  893:           `;
+  894:         });
+  895:         sidebarHtml += `</div>`;
+  896:       }
+  897:     });
+  898: 
+  899:     const activeContentPanelHtml = window.getLessonContentPanelHtml(courseSlug, activeSecIdx, activeLesIdx);
+  900: 
+  901:     return `
+  902:       <div class="course-detail-layout animate-item">
+  903:         <aside class="lesson-sidebar">
+  904:           ${sidebarHtml}
+  905:         </aside>
+  906: 
+  907:         <main class="lesson-content">
+  908:           ${activeContentPanelHtml}
+  909:         </main>
+  910:       </div>
+  911:     `;
+  912:   },
+  913: 
+  914:   renderTests: () => `
+  915:     <div class="page-layout animate-item">
+  916:       <main class="main-content full-width">
+  917:         <h2 class="page-heading">Доступные тесты</h2>
+  918:         <div class="tests-grid">
+  919:           <div class="test-card">
+  920:             <div class="test-header">
+  921:               <h3 class="test-title">Дриветрейны</h3>
+  922:               <span class="badge badge-success">Пройден</span>
+  923:             </div>
+  924:             <div class="test-meta">
+  925:               <span>Вопросов: 15</span>
+  926:               <span>Время: 20 мин</span>
+  927:               <span>Попыток: 0/2</span>
+  928:             </div>
+  929:             <a href="#/tests/interface" class="btn btn-outline btn-full disabled">Результаты</a>
+  930:           </div>
+  931:           <div class="test-card">
+  932:             <div class="test-header">
+  933:               <h3 class="test-title">Манипуляторы и передачи</h3>
+  934:               <span class="badge badge-accent">Доступен</span>
+  935:             </div>
+  936:             <div class="test-meta">
+  937:               <span>Вопросов: 20</span>
+  938:               <span>Время: 30 мин</span>
+  939:               <span>Попыток: 2/2</span>
+  940:             </div>
+  941:             <a href="#/tests/interface" class="btn btn-primary btn-full">Начать тест</a>
+  942:           </div>
+  943:           <div class="test-card">
+  944:             <div class="test-header">
+  945:               <h3 class="test-title">Финальный тест: Инженерная часть</h3>
+  946:               <span class="badge badge-neutral">Скоро</span>
+  947:             </div>
+  948:             <div class="test-meta">
+  949:               <span>Вопросов: 35</span>
+  950:               <span>Время: 45 мин</span>
+  951:               <span>Попыток: 1/1</span>
+  952:             </div>
+  953:             <button class="btn btn-outline btn-full" disabled>Недоступен</button>
+  954:           </div>
+  955:           <div class="test-card">
+  956:             <div class="test-header">
+  957:               <h3 class="test-title">FTC SDK и Hardware Map</h3>
+  958:               <span class="badge badge-neutral">Скоро</span>
+  959:             </div>
+  960:             <div class="test-meta">
+  961:               <span>Вопросов: 20</span>
+  962:               <span>Время: 20 мин</span>
+  963:               <span>Попыток: 1/1</span>
+  964:             </div>
+  965:             <button class="btn btn-outline btn-full" disabled>Недоступен</button>
+  966:           </div>
+  967:           <div class="test-card">
+  968:             <div class="test-header">
+  969:               <h3 class="test-title">Engineering Portfolio</h3>
+  970:               <span class="badge badge-neutral">Скоро</span>
+  971:             </div>
+  972:             <div class="test-meta">
+  973:               <span>Вопросов: 20</span>
+  974:               <span>Время: 20 мин</span>
+  975:               <span>Попыток: 1/1</span>
+  976:             </div>
+  977:             <button class="btn btn-outline btn-full" disabled>Недоступен</button>
+  978:           </div>
+  979:         </div>
+  980:       </main>
+  981:     </div>
+  982:   `,
+  983: 
+  984:   renderTestInterface: () => `
+  985:     <div class="test-interface animate-item">
+  986:       <div class="test-topbar">
+  987:         <div class="test-progress">Вопрос 1 из 15</div>
+  988:         <div class="test-timer">24:59</div>
+  989:         <a href="#/tests" class="btn btn-outline">Выйти</a>
+  990:       </div>
+  991:       <div class="test-question-card">
+  992:         <h2 class="test-question">В чем основное преимущество Mecanum дриветрейна перед Tank?</h2>
+  993:         <div class="test-options">
+  994:           <div class="test-option">Способность двигаться в любом направлении (holonomic) без поворота корпуса</div>
+  995:           <div class="test-option">Более высокая скорость на прямых участках</div>
+  996:           <div class="test-option">Большая сила тяги (pushing power) при столкновениях</div>
+  997:           <div class="test-option">Требует только два мотора для управления</div>
+  998: =======
+  999:   // ── Courses catalog ───────────────────────────────────────────────────────
+  1000:   renderCourses: async () => {
+  1001:     let courses = [];
+  1002:     try {
+  1003:       courses = await apiFetch('/courses');
+  1004:     } catch {
+  1005:       return `<div class="page-layout"><p style="color:var(--text-secondary);padding:40px 0;">Ошибка загрузки. Убедитесь, что backend запущен на порту 8000.</p></div>`;
+  1006:     }
+  1007: 
+  1008:     const cards = courses.map(c => `
+  1009:       <div class="catalog-card">
+  1010:         <div class="catalog-thumb"></div>
+  1011:         <div class="catalog-info">
+  1012:           <h3 class="catalog-title">${escHtml(c.title)}</h3>
+  1013:           <div class="catalog-meta">${c.total_lessons} уроков</div>
+  1014:           <div class="progress-bar-container"><div class="progress-bar" style="width:${c.progress_pct}%;"></div></div>
+  1015:           <a href="#/courses/${c.id}" class="btn btn-outline-accent btn-full">Начать</a>
+  1016: >>>>>>> 80e2adf28a8e7693cb2ebd8d95f2dee06c77d205
+<<<<< CONFLICT CONTENT END <<<<<
+  1017:         </div>
+  1018:       </div>
+  1019:     `).join('');
+  1020: 
+  1021:     return `
+
+Line 1234: Conflict Start
+  1229:         <div class="auth-footer">Уже есть аккаунт? <a href="#/login">Войти</a></div>
+  1230:       </div>
+  1231:     </div>
+  1232:   `,
+  1233: 
+>>>>> CONFLICT CONTENT START >>>>>
+  1234: <<<<<<< HEAD
+  1235:   renderDashboard: () => `
+  1236:     <div class="page-layout dashboard-layout animate-item">
+  1237:       <main class="main-content full-width">
+  1238:         <h2 class="dashboard-greeting">Привет, Александр! 👋</h2>
+  1239:         
+  1240:         <div class="dashboard-stats">
+  1241:           <div class="stat-card">
+  1242:             <div class="stat-val">12</div>
+  1243:             <div class="stat-label">Уроков пройдено</div>
+  1244:           </div>
+  1245:           <div class="stat-card">
+  1246:             <div class="stat-val">3</div>
+  1247:             <div class="stat-label">Тестов сдано</div>
+  1248:           </div>
+  1249:           <div class="stat-card">
+  1250:             <div class="stat-val accent">5 🔥</div>
+  1251:             <div class="stat-label">Дней в Phoenix Forge</div>
+  1252:           </div>
+  1253: =======
+  1254:   // ── Dashboard ─────────────────────────────────────────────────────────────
+  1255:   renderDashboard: async () => {
+  1256:     let data;
+  1257:     try {
+  1258:       data = await apiFetch('/dashboard');
+  1259:     } catch (e) {
+  1260:       if (e.status === 401) { window.location.hash = '#/login'; return ''; }
+  1261:       return `<div class="page-layout"><p style="color:var(--text-secondary);padding:40px 0;">Ошибка загрузки.</p></div>`;
+  1262:     }
+  1263: 
+  1264:     const courseCards = data.course_progress.map(c => `
+  1265:       <div class="catalog-card">
+  1266:         <div class="catalog-info">
+  1267:           <h3 class="catalog-title">${escHtml(c.title)}</h3>
+  1268:           <div class="progress-bar-container"><div class="progress-bar" style="width:${c.progress_pct}%;"></div></div>
+  1269:           <a href="#/courses/${c.id}" class="btn btn-outline-accent btn-full">Продолжить</a>
+  1270: >>>>>>> 80e2adf28a8e7693cb2ebd8d95f2dee06c77d205
+<<<<< CONFLICT CONTENT END <<<<<
+  1271:         </div>
+  1272:       </div>
+  1273:     `).join('');
+  1274: 
+  1275: <<<<<<< HEAD
+
+Line 1275: Conflict Start
+  1270: >>>>>>> 80e2adf28a8e7693cb2ebd8d95f2dee06c77d205
+  1271:         </div>
+  1272:       </div>
+  1273:     `).join('');
+  1274: 
+>>>>> CONFLICT CONTENT START >>>>>
+  1275: <<<<<<< HEAD
+  1276:         <section class="dashboard-section">
+  1277:           <h3 class="section-title">Продолжить обучение</h3>
+  1278:           <div class="courses-grid" style="grid-template-columns: repeat(3, 1fr); gap: 24px;">
+  1279:             <div class="catalog-card">
+  1280:               <div class="catalog-info">
+  1281:                 <h3 class="catalog-title">Введение в FIRST</h3>
+  1282:                 <div class="progress-bar-container"><div class="progress-bar" style="width: 15%;"></div></div>
+  1283:                 <a href="#/courses/intro" class="btn btn-outline-accent btn-full">Продолжить</a>
+  1284:               </div>
+  1285:             </div>
+  1286:             <div class="catalog-card">
+  1287:               <div class="catalog-info">
+  1288:                 <h3 class="catalog-title">CAD</h3>
+  1289:                 <div class="progress-bar-container"><div class="progress-bar" style="width: 0%;"></div></div>
+  1290:                 <a href="#/courses/cad" class="btn btn-outline-accent btn-full">Продолжить</a>
+  1291:               </div>
+  1292:             </div>
+  1293:             <div class="catalog-card">
+  1294:               <div class="catalog-info">
+  1295:                 <h3 class="catalog-title">Билд</h3>
+  1296:                 <div class="progress-bar-container"><div class="progress-bar" style="width: 5%;"></div></div>
+  1297:                 <a href="#/courses/build" class="btn btn-outline-accent btn-full">Продолжить</a>
+  1298:               </div>
+  1299:             </div>
+  1300:           </div>
+  1301:         </section>
+  1302: 
+  1303:         <section class="dashboard-section">
+  1304:           <h3 class="section-title">Мои сертификаты</h3>
+  1305:           <div class="cert-grid">
+  1306:             <div class="cert-card locked">
+  1307:               <div class="cert-icon">🔒</div>
+  1308:               <div class="cert-name">Сертификат: Введение в FTC</div>
+  1309:             </div>
+  1310:             <div class="cert-card locked">
+  1311:               <div class="cert-icon">🔒</div>
+  1312:               <div class="cert-name">Сертификат: CAD и Билд FTC</div>
+  1313:             </div>
+  1314:             <div class="cert-card locked">
+  1315:               <div class="cert-icon">🔒</div>
+  1316:               <div class="cert-name">Сертификат: Кодинг и Алгоритмы FTC</div>
+  1317:             </div>
+  1318:             <div class="cert-card locked">
+  1319:               <div class="cert-icon">🏆</div>
+  1320:               <div class="cert-name" style="color: var(--accent);">Phoenix Forge — Full FTC Certificate</div>
+  1321:             </div>
+  1322:           </div>
+  1323:         </section>
+  1324: =======
+  1325:     const certCards = data.certificates.map(c => `
+  1326:       <div class="cert-card ${c.earned ? '' : 'locked'}">
+  1327:         <div class="cert-icon">${c.earned ? '🏆' : '🔒'}</div>
+  1328:         <div class="cert-name" ${c.earned ? 'style="color:var(--accent);"' : ''}>${escHtml(c.name)}</div>
+  1329:       </div>
+  1330:     `).join('');
+  1331: 
+  1332:     const attemptsRows = data.recent_attempts.length
+  1333:       ? data.recent_attempts.map(a => `
+  1334:           <tr>
+  1335:             <td>${escHtml(a.test_title)}</td>
+  1336:             <td>${fmtDate(a.completed_at)}</td>
+  1337:             <td>${a.score_pct}%</td>
+  1338:             <td><span class="badge ${a.passed ? 'badge-success' : 'badge-error'}">${a.passed ? 'Сдан' : 'Не сдан'}</span></td>
+  1339:           </tr>`).join('')
+  1340:       : `<tr><td colspan="4" style="color:var(--text-secondary);text-align:center;padding:24px;">Тестов ещё не сдано</td></tr>`;
+  1341: >>>>>>> 80e2adf28a8e7693cb2ebd8d95f2dee06c77d205
+<<<<< CONFLICT CONTENT END <<<<<
+  1342: 
+  1343:     return `
+  1344:       <div class="page-layout dashboard-layout animate-item">
+  1345:         <main class="main-content full-width">
+  1346:           <h2 class="dashboard-greeting">Привет, ${escHtml(data.display_name)}! 👋</h2>

@@ -394,6 +394,14 @@ window.selectLesson = function(courseSlug, secIdx, lesIdx) {
   if (contentContainer) {
     contentContainer.innerHTML = window.getLessonContentPanelHtml(courseSlug, secIdx, lesIdx);
     
+    // Call ChibiVideo.init(videoEl) after video element renders in lesson view
+    const videoEl = contentContainer.querySelector('video');
+    if (videoEl && window.ChibiVideo) {
+      window.ChibiVideo.init(videoEl);
+    } else if (window.ChibiVideo) {
+      window.ChibiVideo.destroy();
+    }
+    
     // Initialize Code Lab if it's a lab lesson!
     const lesson = section.lessons[lesIdx];
     const isLab = (courseSlug === 'coding' && (lesson.id === '1.2' || lesson.id === '2.2' || lesson.id === '3.4' || lesson.type === 'ЗАДАНИЕ'));
@@ -507,12 +515,9 @@ window.getLessonContentPanelHtml = function(courseSlug, secIdx, lesIdx) {
 
   if (lesson.type === 'VIDEO') {
     mediaCardHtml = `
-      <div class="video-placeholder-card">
-        <span class="badge-video top-left-tag">VIDEO</span>
-        <button class="play-btn-circle" aria-label="Play video">
-          <svg class="play-icon-svg" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-        </button>
-        <span class="duration-badge">${lesson.duration || '12:00'}</span>
+      <div class="video-placeholder" style="padding:0;background:#000;position:relative;">
+        <!-- TODO: replace with real FTC lesson video URL -->
+        <video id="lesson-video" class="lesson-video-element" controls width="100%" height="100%" src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" style="display:block;width:100%;height:100%;border-radius:8px;object-fit:cover;"></video>
       </div>
     `;
   } else if (lesson.type === 'ЗАДАНИЕ') {
@@ -866,6 +871,16 @@ window.AppViews = {
     });
 
     const activeContentPanelHtml = window.getLessonContentPanelHtml(courseSlug, activeSecIdx, activeLesIdx);
+
+    // Call ChibiVideo.init(videoEl) after video element renders in lesson view
+    setTimeout(() => {
+      const videoEl = document.getElementById('lesson-video');
+      if (videoEl && window.ChibiVideo) {
+        window.ChibiVideo.init(videoEl);
+      } else if (window.ChibiVideo) {
+        window.ChibiVideo.destroy();
+      }
+    }, 100);
 
     return `
       <div class="course-detail-layout animate-item">

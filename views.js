@@ -126,6 +126,12 @@ window.CoursesData = {
           { id: '4.3', title: 'Финальный проект — полная CAD модель робота', type: 'ЗАДАНИЕ', duration: '120:00' },
           { id: '4.4', title: 'Экспорт чертежей для сборки', type: 'VIDEO', duration: '14:10' }
         ]
+      },
+      {
+        title: 'AI Проверка скетча',
+        lessons: [
+          { id: '5.1', title: 'Загрузить скетч на проверку', type: 'AI' }
+        ]
       }
     ]
   },
@@ -408,6 +414,11 @@ window.selectLesson = function(courseSlug, secIdx, lesIdx) {
     if (isLab && window.initCodeLab) {
       window.initCodeLab(lesson.id);
     }
+    
+    // Initialize AI Sketch Review if it's an AI lesson!
+    if (lesson.type === 'AI' && window.initAISketchReview) {
+      window.initAISketchReview();
+    }
   }
 };
 
@@ -432,6 +443,10 @@ window.getLessonContentPanelHtml = function(courseSlug, secIdx, lesIdx) {
 
   const breadcrumb = `Курсы / ${course.title} / ${section.title}`;
   const progressPercent = Math.max(5, course.progress);
+
+  if (lesson.type === 'AI') {
+    return window.renderAISketchReviewPanel(course, section, lesson);
+  }
 
   const isLab = (courseSlug === 'coding' && (lesson.id === '1.2' || lesson.id === '2.2' || lesson.id === '3.4' || lesson.type === 'ЗАДАНИЕ'));
   if (isLab) {
@@ -853,6 +868,8 @@ window.AppViews = {
             icon = '⭐';
           } else if (lesson.type === 'LIVE') {
             icon = '📡';
+          } else if (lesson.type === 'AI') {
+            icon = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#FF2D6B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m11.314 11.314l.707.707M12 8a4 4 0 100 8 4 4 0 000-8z"/></svg>`;
           }
 
           sidebarHtml += `
@@ -861,6 +878,7 @@ window.AppViews = {
               <span class="lesson-title" style="font-family: var(--font-body); font-size: 14px; display:flex; align-items:center; gap:6px; flex:1;">
                 ${lesson.id} ${lesson.title}
                 ${isLab ? `<span style="font-family: var(--font-mono); font-size: 9px; color: #FF2D6B; border: 1px solid rgba(255, 45, 107, 0.27); padding: 1px 4px; border-radius: 3px; font-weight: 500; letter-spacing:0.02em; flex-shrink: 0; background: rgba(255, 45, 107, 0.05);">LAB</span>` : ''}
+                ${lesson.type === 'AI' ? `<span style="font-family: 'DM Mono', monospace; font-size: 9px; color: #FF2D6B; border: 1px solid #FF2D6B44; padding: 1px 4px; border-radius: 3px; font-weight: 500; letter-spacing:0.02em; flex-shrink: 0; background: rgba(255, 45, 107, 0.05);">AI</span>` : ''}
               </span>
               ${lesson.duration ? `<span class="lesson-duration" style="font-family: var(--font-mono); font-size: 11px; color: var(--txt2); flex-shrink:0;">${lesson.duration}</span>` : ''}
             </div>
@@ -879,6 +897,11 @@ window.AppViews = {
         window.ChibiVideo.init(videoEl);
       } else if (window.ChibiVideo) {
         window.ChibiVideo.destroy();
+      }
+
+      // Initialize AI Sketch Review if it is rendered
+      if (document.querySelector('.ai-sketch-review-container') && window.initAISketchReview) {
+        window.initAISketchReview();
       }
     }, 100);
 
@@ -1184,3 +1207,699 @@ window.applyCoursesFilter = function() {
     }
   });
 };
+
+// ==========================================================================
+// AI SKETCH REVIEW SECTION
+// ==========================================================================
+
+window.renderAISketchReviewPanel = function(course, section, lesson) {
+  const breadcrumb = `Курсы / ${course.title} / ${section.title}`;
+  const progressPercent = Math.max(5, course.progress);
+
+  return `
+    <div class="lesson-topbar">
+      <div class="breadcrumb" style="font-family: var(--font-body); font-size: 13px; color: var(--txt2); margin-bottom: 12px;">${breadcrumb}</div>
+      <h2 class="lesson-heading" style="font-family: var(--font-display); font-size: 28px; font-weight: 800; margin-bottom: 24px;">${lesson.id} ${lesson.title}</h2>
+      <div class="progress-bar-container" style="height: 2px; background: #28282c; width: 100%; margin: 8px 0; border-radius: 2px;">
+        <div class="progress-bar" style="width: ${progressPercent}%; height: 100%; background: linear-gradient(90deg, #FF4D1C, #FF2D6B); border-radius: 2px;"></div>
+      </div>
+    </div>
+    
+    <div class="ai-sketch-review-container">
+      <!-- Left Panel: Upload & Settings -->
+      <div class="ai-review-panel">
+        <h3 class="ai-review-panel-header">Загрузить скетч</h3>
+        
+        <!-- Drag & Drop Zone -->
+        <div id="sketch-drop-zone" class="sketch-upload-zone">
+          <input type="file" id="sketch-file-input" accept="image/png, image/jpeg, image/svg+xml, application/pdf" style="display: none;" />
+          <svg class="sketch-empty-icon" viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+          </svg>
+          <div class="upload-zone-text" style="font-family: var(--font-body);">Перетащи скетч сюда или нажми для выбора</div>
+          <div class="upload-zone-formats" style="font-family: var(--font-mono);">Поддерживаются: PNG, JPG, PDF, SVG (Максимум 5MB)</div>
+          
+          <!-- Image/File Preview Container -->
+          <div id="sketch-preview-container" class="sketch-preview-container" style="display: none;">
+            <img id="sketch-preview-img" class="sketch-preview-image" src="" alt="Preview" />
+            <button id="sketch-remove-btn" class="sketch-preview-remove-btn" title="Удалить">×</button>
+          </div>
+        </div>
+        <div id="sketch-file-info" class="sketch-file-info" style="display: none; font-family: var(--font-mono);"></div>
+        
+        <!-- Context Selector -->
+        <div class="sketch-label" style="font-family: var(--font-mono);">Что проверяем?</div>
+        <div id="sketch-context-chips" class="sketch-chips-row">
+          <div class="sketch-chip selected" data-value="Дриветрейн">Дриветрейн</div>
+          <div class="sketch-chip" data-value="Манипулятор">Манипулятор</div>
+          <div class="sketch-chip" data-value="Линейные слайды">Линейные слайды</div>
+          <div class="sketch-chip" data-value="Полная сборка">Полная сборка</div>
+        </div>
+        
+        <!-- Detail Level Selector -->
+        <div class="sketch-label" style="font-family: var(--font-mono);">Уровень детализации</div>
+        <div id="sketch-level-chips" class="sketch-chips-row">
+          <div class="sketch-chip" data-value="Новичок">Новичок</div>
+          <div class="sketch-chip selected" data-value="Средний">Средний</div>
+          <div class="sketch-chip" data-value="Эксперт">Эксперт</div>
+        </div>
+        
+        <!-- Optional Note -->
+        <div class="sketch-textarea-wrapper">
+          <textarea id="sketch-user-note" class="sketch-textarea" placeholder="Опиши что хочешь проверить (необязательно)" maxlength="300" style="font-family: var(--font-body);"></textarea>
+          <div id="sketch-char-counter" class="sketch-textarea-counter" style="font-family: var(--font-mono);">0 / 300</div>
+        </div>
+        
+        <!-- Submit Button -->
+        <button id="sketch-submit-btn" class="sketch-submit-btn" disabled>
+          <span>🔍 Проверить скетч</span>
+        </button>
+        
+        <!-- History Section -->
+        <div id="sketch-history-section" class="sketch-history-section" style="display: none;">
+          <div class="sketch-label" style="font-family: var(--font-mono);">Последние проверки</div>
+          <div id="sketch-history-list" class="sketch-history-list"></div>
+        </div>
+      </div>
+      
+      <!-- Right Panel: AI Feedback -->
+      <div class="ai-review-panel" id="ai-feedback-panel">
+        <h3 class="ai-review-panel-header">Анализ AI</h3>
+        <div class="ai-review-panel-subtext" style="font-family: var(--font-body);">Phoenix AI проверит твой скетч по критериям FTC</div>
+        
+        <!-- Default State -->
+        <div id="feedback-empty-state" class="sketch-empty-state">
+          <svg class="sketch-empty-icon" viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 16v-4M12 8h.01"/>
+          </svg>
+          <div class="sketch-empty-text" style="font-family: var(--font-body);">Загрузи скетч слева чтобы получить анализ</div>
+        </div>
+        
+        <!-- Loading State -->
+        <div id="feedback-loading-state" class="sketch-loading-state" style="display: none;">
+          <div class="sketch-skeleton-block"></div>
+          <div class="sketch-skeleton-block"></div>
+          <div class="sketch-skeleton-block"></div>
+          <div class="sketch-loading-text" style="font-family: var(--font-mono);">Phoenix AI анализирует твой скетч...</div>
+          <div class="sketch-loading-est" style="font-family: var(--font-mono);">~10 секунд</div>
+        </div>
+        
+        <!-- Error State -->
+        <div id="feedback-error-state" class="ai-review-error-panel" style="display: none;">
+          <svg class="ai-review-error-icon" viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0zM12 9v4M12 17h.01"/>
+          </svg>
+          <h4 id="error-title" class="ai-review-error-title">Не удалось подключиться к Phoenix AI</h4>
+          <p id="error-desc" class="ai-review-error-desc">Попробуйте загрузить файл снова.</p>
+          <button id="error-retry-btn" class="sketch-retry-btn">Повторить попытку</button>
+        </div>
+        
+        <!-- Results Container -->
+        <div id="feedback-results-container" class="sketch-results-container" style="display: none;">
+          <!-- Banner -->
+          <div id="demo-banner" class="demo-mode-banner" style="font-family: var(--font-mono);">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0zM12 9v4M12 17h.01"/></svg>
+            <span>Демо-режим — AI анализ подключается</span>
+          </div>
+          
+          <div class="sketch-results-header">
+            <div class="score-circle-container">
+              <div id="result-score-badge" class="score-circle-badge">7</div>
+              <div class="score-circle-label" style="font-family: var(--font-mono);">/ 10</div>
+            </div>
+            
+            <div class="compliance-badge-container">
+              <div id="result-compliance-badge" class="sketch-compliance-badge">Соответствует правилам FTC ✓</div>
+              <div id="result-compliance-note" class="sketch-compliance-note">Размеры соответствуют Robot Rules FTC</div>
+            </div>
+          </div>
+          
+          <div class="sketch-cards-list">
+            <!-- Card 1: Good points -->
+            <div class="feedback-card" style="border-left-color: #FF8C42;" id="card-good">
+              <div class="feedback-card-header" onclick="window.toggleFeedbackCard(this)">
+                <span>✓ Что сделано хорошо</span>
+                <span class="feedback-card-arrow">▼</span>
+              </div>
+              <div class="feedback-card-content">
+                <ul class="feedback-bullets-list" id="feedback-good-list"></ul>
+              </div>
+            </div>
+            
+            <!-- Card 2: Improvements -->
+            <div class="feedback-card" style="border-left-color: #FF4D1C;" id="card-improve">
+              <div class="feedback-card-header" onclick="window.toggleFeedbackCard(this)">
+                <span>⚠ Что улучшить</span>
+                <span class="feedback-card-arrow">▼</span>
+              </div>
+              <div class="feedback-card-content">
+                <ul class="feedback-bullets-list" id="feedback-improve-list"></ul>
+              </div>
+            </div>
+            
+            <!-- Card 3: Critical Errors -->
+            <div class="feedback-card" style="border-left-color: #FF2D6B;" id="card-critical">
+              <div class="feedback-card-header" onclick="window.toggleFeedbackCard(this)">
+                <span>✗ Критические ошибки</span>
+                <span class="feedback-card-arrow">▼</span>
+              </div>
+              <div class="feedback-card-content">
+                <ul class="feedback-bullets-list" id="feedback-critical-list"></ul>
+              </div>
+            </div>
+            
+            <!-- Card 4: Recommendations -->
+            <div class="feedback-card" style="border-left-color: #FF8C42;" id="card-rec">
+              <div class="feedback-card-header" onclick="window.toggleFeedbackCard(this)">
+                <span>💡 Рекомендации</span>
+                <span class="feedback-card-arrow">▼</span>
+              </div>
+              <div class="feedback-card-content">
+                <ul class="feedback-bullets-list" id="feedback-rec-list"></ul>
+              </div>
+            </div>
+          </div>
+          
+          <button id="sketch-retry-btn" class="sketch-retry-btn">Загрузить другой скетч</button>
+        </div>
+      </div>
+    </div>
+  `;
+};
+
+window.toggleFeedbackCard = function(header) {
+  const card = header.parentElement;
+  if (card) {
+    card.classList.toggle('collapsed');
+  }
+};
+
+window.initAISketchReview = function() {
+  const fileInput = document.getElementById('sketch-file-input');
+  const dropZone = document.getElementById('sketch-drop-zone');
+  const previewContainer = document.getElementById('sketch-preview-container');
+  const previewImg = document.getElementById('sketch-preview-img');
+  const removeBtn = document.getElementById('sketch-remove-btn');
+  const fileInfo = document.getElementById('sketch-file-info');
+  const charCounter = document.getElementById('sketch-char-counter');
+  const userNote = document.getElementById('sketch-user-note');
+  const submitBtn = document.getElementById('sketch-submit-btn');
+  
+  const emptyState = document.getElementById('feedback-empty-state');
+  const loadingState = document.getElementById('feedback-loading-state');
+  const errorState = document.getElementById('feedback-error-state');
+  const resultsContainer = document.getElementById('feedback-results-container');
+  const errorRetryBtn = document.getElementById('error-retry-btn');
+
+  let selectedFile = null;
+
+  // File size formatter helper
+  function formatBytes(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  }
+
+  // Helper to resize image to compact thumb for localStorage
+  function resizeImageToThumb(file) {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          const maxDim = 80;
+          let w = img.width;
+          let h = img.height;
+          if (w > h) {
+            h = Math.round((h * maxDim) / w);
+            w = maxDim;
+          } else {
+            w = Math.round((w * maxDim) / h);
+            h = maxDim;
+          }
+          canvas.width = w;
+          canvas.height = h;
+          ctx.drawImage(img, 0, 0, w, h);
+          resolve(canvas.toDataURL('image/jpeg', 0.7));
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // Setup upload UI with a file
+  function handleFile(file) {
+    if (!file) return;
+
+    // Check size limit: 5MB
+    const limitBytes = 5 * 1024 * 1024;
+    if (file.size > limitBytes) {
+      dropZone.classList.add('error');
+      alert('Файл слишком большой. Максимум 5MB');
+      resetUpload();
+      return;
+    }
+
+    // Check formats
+    const allowedTypes = ['image/png', 'image/jpeg', 'image/svg+xml', 'application/pdf'];
+    if (!allowedTypes.includes(file.type)) {
+      dropZone.classList.add('error');
+      alert('Поддерживаются: PNG, JPG, PDF, SVG');
+      resetUpload();
+      return;
+    }
+
+    dropZone.classList.remove('error');
+    selectedFile = file;
+
+    // File Preview
+    if (file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        previewImg.src = e.target.result;
+        previewContainer.style.display = 'flex';
+      };
+      reader.readAsDataURL(file);
+    } else {
+      // PDF or non-previewable file representation
+      previewImg.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.12.313/images/texture-pdf.png';
+      previewContainer.style.display = 'flex';
+    }
+
+    fileInfo.textContent = `${file.name} (${formatBytes(file.size)})`;
+    fileInfo.style.display = 'block';
+
+    // Enable submit
+    submitBtn.disabled = false;
+  }
+
+  function resetUpload() {
+    selectedFile = null;
+    fileInput.value = '';
+    previewImg.src = '';
+    previewContainer.style.display = 'none';
+    fileInfo.textContent = '';
+    fileInfo.style.display = 'none';
+    submitBtn.disabled = true;
+  }
+
+  // Drag & drop listeners
+  dropZone.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
+
+  dropZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropZone.classList.add('dragover');
+  });
+
+  dropZone.addEventListener('dragleave', () => {
+    dropZone.classList.remove('dragover');
+  });
+
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('dragover');
+    if (e.dataTransfer.files.length) {
+      handleFile(e.dataTransfer.files[0]);
+    }
+  });
+
+  removeBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    resetUpload();
+  });
+
+  // Option Chips: Single Select
+  function wireChips(containerId) {
+    const chips = document.querySelectorAll(`#${containerId} .sketch-chip`);
+    chips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        document.querySelectorAll(`#${containerId} .sketch-chip`).forEach(c => c.classList.remove('selected'));
+        chip.classList.add('selected');
+      });
+    });
+  }
+
+  wireChips('sketch-context-chips');
+  wireChips('sketch-level-chips');
+
+  // Textarea counter
+  userNote.addEventListener('input', () => {
+    const count = userNote.value.length;
+    charCounter.textContent = `${count} / 300`;
+  });
+
+  // Reset panels to defaults
+  function resetAll() {
+    resetUpload();
+    userNote.value = '';
+    charCounter.textContent = '0 / 300';
+    
+    emptyState.style.display = 'flex';
+    loadingState.style.display = 'none';
+    errorState.style.display = 'none';
+    resultsContainer.style.display = 'none';
+  }
+
+  // Setup click listeners for retry buttons (could be multiple in DOM)
+  document.querySelectorAll('.sketch-retry-btn').forEach(btn => {
+    btn.addEventListener('click', resetAll);
+  });
+  errorRetryBtn.addEventListener('click', resetAll);
+
+  // Submit Handler
+  submitBtn.addEventListener('click', async () => {
+    if (!selectedFile) return;
+
+    // UI state change to loading
+    submitBtn.disabled = true;
+    const oldText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<span class="sketch-submit-spinner"></span><span>Анализируем...</span>';
+    
+    emptyState.style.display = 'none';
+    errorState.style.display = 'none';
+    resultsContainer.style.display = 'none';
+    loadingState.style.display = 'flex';
+
+    // Get chip selections
+    const selectedContext = document.querySelector('#sketch-context-chips .sketch-chip.selected').getAttribute('data-value');
+    const selectedLevel = document.querySelector('#sketch-level-chips .sketch-chip.selected').getAttribute('data-value');
+    const noteText = userNote.value.trim();
+
+    try {
+      // Convert to base64
+      const base64 = await new Promise((res, rej) => {
+        const reader = new FileReader();
+        reader.onload = () => res(reader.result.split(',')[1]);
+        reader.onerror = rej;
+        reader.readAsDataURL(selectedFile);
+      });
+
+      // API call
+      let result;
+      let demoMode = false;
+      try {
+        const response = await fetch('/api/ai/sketch-review', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            image_base64: base64,
+            media_type: selectedFile.type,
+            context: selectedContext,
+            level: selectedLevel,
+            note: noteText
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error('API server returned error');
+        }
+        result = await response.json();
+      } catch (err) {
+        console.warn("Backend API not reachable. Using fallback mock database.", err);
+        // Fallback to rich mock database
+        await new Promise(r => setTimeout(r, 1200)); // Simulate AI delay
+        result = getMockReview(selectedContext, selectedLevel, noteText);
+        demoMode = true;
+      }
+
+      // Handle custom sketch error
+      if (result.error) {
+        showErrorState("Загрузи CAD скетч или чертёж робота", result.error);
+        return;
+      }
+
+      // Display results
+      renderResults(result, demoMode, selectedContext, selectedFile);
+
+    } catch (e) {
+      console.error(e);
+      showErrorState("Не удалось подключиться к Phoenix AI", "Произошла непредвиденная ошибка при обработке запроса. Пожалуйста, попробуйте снова.");
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = oldText;
+      loadingState.style.display = 'none';
+    }
+  });
+
+  function showErrorState(title, desc) {
+    loadingState.style.display = 'none';
+    resultsContainer.style.display = 'none';
+    emptyState.style.display = 'none';
+    
+    document.getElementById('error-title').textContent = title;
+    document.getElementById('error-desc').textContent = desc;
+    errorState.style.display = 'flex';
+  }
+
+  function renderResults(result, isDemo, context, file) {
+    loadingState.style.display = 'none';
+    errorState.style.display = 'none';
+    emptyState.style.display = 'none';
+    
+    // Demo mode banner toggle
+    const banner = document.getElementById('demo-banner');
+    banner.style.display = isDemo ? 'flex' : 'none';
+
+    // Score Circle Badge styling
+    const scoreBadge = document.getElementById('result-score-badge');
+    scoreBadge.textContent = result.score;
+    
+    // Color circle by score
+    let scoreColor = '#FF2D6B'; // Default 1-4
+    if (result.score >= 8) {
+      scoreColor = '#FF8C42';
+    } else if (result.score >= 5) {
+      scoreColor = '#FF4D1C';
+    }
+    scoreBadge.style.borderColor = scoreColor;
+    scoreBadge.style.color = scoreColor;
+
+    // Compliance Badge styling
+    const compBadge = document.getElementById('result-compliance-badge');
+    const compNote = document.getElementById('result-compliance-note');
+    if (result.ftc_compliant) {
+      compBadge.textContent = "Соответствует правилам FTC ✓";
+      compBadge.style.color = '#FF8C42';
+      compBadge.style.borderColor = '#FF8C42';
+    } else {
+      compBadge.textContent = "Нарушает правила FTC ✗";
+      compBadge.style.color = '#FF2D6B';
+      compBadge.style.borderColor = '#FF2D6B';
+    }
+    compNote.textContent = result.ftc_note || '';
+
+    // Card bullet render helper
+    function renderBullets(listElId, cardId, bulletColor, bullets) {
+      const listEl = document.getElementById(listElId);
+      const card = document.getElementById(cardId);
+      
+      listEl.innerHTML = '';
+      if (!bullets || bullets.length === 0) {
+        card.style.display = 'none';
+        return;
+      }
+
+      card.style.display = 'block';
+      bullets.forEach(bullet => {
+        const li = document.createElement('li');
+        li.className = 'feedback-bullet-item';
+        li.innerHTML = `
+          <span class="feedback-bullet-dot" style="color: ${bulletColor};">■</span>
+          <span>${escHtml(bullet)}</span>
+        `;
+        listEl.appendChild(li);
+      });
+    }
+
+    renderBullets('feedback-good-list', 'card-good', '#FF8C42', result.positive);
+    renderBullets('feedback-improve-list', 'card-improve', '#FF4D1C', result.improve);
+    renderBullets('feedback-critical-list', 'card-critical', '#FF2D6B', result.critical);
+    renderBullets('feedback-rec-list', 'card-rec', '#FF8C42', result.recommendations);
+
+    resultsContainer.style.display = 'flex';
+
+    // Store review history
+    if (file) {
+      saveReviewToHistory(context, result, file);
+    }
+  }
+
+  async function saveReviewToHistory(context, result, file) {
+    try {
+      const history = JSON.parse(localStorage.getItem('cad_reviews') || '[]');
+      
+      // Generate thumbnail
+      let thumb = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.12.313/images/texture-pdf.png';
+      if (file && file.type.startsWith('image/')) {
+        thumb = await resizeImageToThumb(file);
+      }
+
+      const reviewItem = {
+        timestamp: Date.now(),
+        score: result.score,
+        context: context,
+        thumb: thumb,
+        data: result
+      };
+
+      // Add to beginning and limit to 3 items
+      history.unshift(reviewItem);
+      const trimmedHistory = history.slice(0, 3);
+      localStorage.setItem('cad_reviews', JSON.stringify(trimmedHistory));
+
+      // Re-render history list
+      loadHistoryList();
+    } catch (e) {
+      console.warn("History storage failed:", e);
+    }
+  }
+
+  function loadHistoryList() {
+    const historySection = document.getElementById('sketch-history-section');
+    const historyList = document.getElementById('sketch-history-list');
+    const history = JSON.parse(localStorage.getItem('cad_reviews') || '[]');
+
+    if (history.length === 0) {
+      historySection.style.display = 'none';
+      return;
+    }
+
+    historyList.innerHTML = '';
+    history.forEach((item, index) => {
+      // Color badge by score
+      let badgeBg = '#FF2D6B';
+      if (item.score >= 8) {
+        badgeBg = '#FF8C42';
+      } else if (item.score >= 5) {
+        badgeBg = '#FF4D1C';
+      }
+
+      const card = document.createElement('div');
+      card.className = 'sketch-history-card';
+      card.innerHTML = `
+        <div class="sketch-history-left">
+          <img class="sketch-history-thumb" src="${item.thumb}" alt="Thumb" />
+          <div class="sketch-history-info">
+            <div class="sketch-history-context">${escHtml(item.context)}</div>
+            <div class="sketch-history-date">${new Date(item.timestamp).toLocaleString('ru-RU', { dateStyle: 'short', timeStyle: 'short' })}</div>
+          </div>
+        </div>
+        <div class="sketch-history-score" style="background: ${badgeBg}33; color: ${badgeBg}; border: 1px solid ${badgeBg}44; font-family: var(--font-mono);">
+          ${item.score}
+        </div>
+      `;
+      
+      card.addEventListener('click', () => {
+        // Reload that review directly
+        renderResults(item.data, false, item.context, null);
+        
+        // Populate preview with history thumb for mock visibility
+        previewImg.src = item.thumb;
+        previewContainer.style.display = 'flex';
+        fileInfo.textContent = `Архивный скетч: ${item.context}`;
+        fileInfo.style.display = 'block';
+        submitBtn.disabled = false;
+      });
+
+      historyList.appendChild(card);
+    });
+
+    historySection.style.display = 'block';
+  }
+
+  // Load history list initially
+  loadHistoryList();
+};
+
+function getMockReview(context, level, note) {
+  const mockDb = {
+    "Дриветрейн": {
+      "score": 7,
+      "positive": [
+        "Правильное расположение моторов с легким доступом для обслуживания",
+        "Использование стандартных 90мм колес Mecanum повышает маневренность",
+        "Предусмотрены ребра жесткости для защиты от боковых ударов рамы"
+      ],
+      "improve": [
+        "Передаточное число моторов 19.2:1 может быть слишком быстрым для точного автонома, рассмотрите 22.3:1",
+        "Осевые подшипники установлены только с одной стороны пластины крепления колес"
+      ],
+      "critical": [],
+      "recommendations": [
+        "Добавьте энкодеры или датчики одометрии для автономного периода",
+        "Убедитесь, что зазор между колесом и рамой составляет не менее 5 мм"
+      ],
+      "ftc_compliant": true,
+      "ftc_note": "Размеры 445x445мм соответствуют правилу старта (не более 18x18x18 дюймов)"
+    },
+    "Манипулятор": {
+      "score": 6,
+      "positive": [
+        "Компактный дизайн захвата с шестеренчатым зацеплением лапок",
+        "Использование силиконовых накладок на захвате для надежной фиксации игровых элементов"
+      ],
+      "improve": [
+        "Длина плеча манипулятора слишком велика для одного серводвигателя, возможен перегрев",
+        "Центр тяжести всей конструкции сильно смещен вперед при максимальном вылете"
+      ],
+      "critical": [
+        "Указанный сервопривод превышает допустимый лимит мощности по регламенту (нарушение правила RE04)"
+      ],
+      "ftc_compliant": false,
+      "ftc_note": "Нарушение правила RE04 (спецификации допустимых двигателей)"
+    },
+    "Линейные слайды": {
+      "score": 8,
+      "positive": [
+        "Многосекционная телескопическая система с использованием износостойких направляющих",
+        "Тросовая система намотки аккуратно разведена и имеет натяжитель"
+      ],
+      "improve": [
+        "Возвратная пружина имеет недостаточное натяжение на верхней секции",
+        "Диаметр приводного троса (0.8мм) может привести к обрыву при резких стартах"
+      ],
+      "critical": [],
+      "recommendations": [
+        "Замените стальной трос на кевларовую нить для облегчения веса конструкции",
+        "Установите механические концевики (Limit switches) для авто-стопа в крайних точках"
+      ],
+      "ftc_compliant": true,
+      "ftc_note": "Прочность конструкции соответствует требованиям жестких столкновений на поле"
+    },
+    "Полная сборка": {
+      "score": 4,
+      "positive": [
+        "Компоновка управляющей электроники аккуратна и защищена верхним кожухом",
+        "Центр тяжести сбалансирован посередине шасси робота"
+      ],
+      "improve": [
+        "Кабель-менеджмент: силовые провода проходят слишком близко к шестерням цепной передачи",
+        "Общая масса робота близка к лимиту 19.05 кг, рекомендуется облегчить раму вырезами"
+      ],
+      "critical": [
+        "Габаритные размеры робота в стартовом положении превышают 18x18 дюймов (465мм вместо разрешенных 457.2мм)"
+      ],
+      "ftc_compliant": false,
+      "ftc_note": "Превышение максимальных стартовых размеров (Game Manual Part 1)"
+    }
+  };
+
+  const data = mockDb[context] || mockDb["Дриветрейн"];
+  let adjustedScore = data.score;
+  
+  if (level === "Новичок") adjustedScore = Math.min(10, adjustedScore + 1);
+  if (level === "Эксперт") adjustedScore = Math.max(1, adjustedScore - 1);
+  
+  return {
+    ...data,
+    score: adjustedScore
+  };
+}
+

@@ -773,9 +773,19 @@ window.AppViews = {
         difficulty = 'advanced';
       }
 
+      const courseImages = {
+        'intro': 'assets/course_intro.jpg',
+        'cad': 'assets/course_cad.jpg',
+        'build': 'assets/course_build.jpg',
+        'coding': 'assets/course_coding.png',
+        'gamedrive': 'assets/course_gamedrive.png'
+      };
+      const imgUrl = courseImages[slug] || '';
+      const bgStyle = imgUrl ? `background: #202022 url('${imgUrl}') no-repeat center/cover;` : 'background: #202022;';
+
       gridHtml += `
         <div class="catalog-card" data-category="${slug}" data-difficulty="${difficulty}" data-progress="${course.progress}">
-          <div class="catalog-thumb" style="height: 140px; background: #202022; border-bottom: 1px solid var(--border); position: relative; padding: 16px;">
+          <div class="catalog-thumb" style="height: 140px; ${bgStyle} border-bottom: 1px solid var(--border); position: relative; padding: 16px;">
             <span class="${tagClass}" style="position: absolute; top: 16px; left: 16px;">
               ${slug === 'season' ? '<span class="live-pulse-dot"></span>' : ''}${course.tag}
             </span>

@@ -1064,110 +1064,75 @@ window.AppViews = {
     </div>
   `,
 
-  renderDashboard: () => `
-    <div class="page-layout dashboard-layout animate-item">
-      <main class="main-content full-width">
-        <h2 class="dashboard-greeting" style="display: flex; justify-content: space-between; align-items: center; gap: 15px; flex-wrap: wrap;">
-          <span>Привет, ${window.Auth.isAuthenticated() ? (window.Auth.getUser()?.display_name || 'Студент') : 'Гость'}! 👋</span>
-          ${window.Auth.isAuthenticated() ? `<button class="btn btn-outline-accent" onclick="window.Auth.logout()" style="font-size: 14px; padding: 6px 12px; cursor: pointer;">Выйти</button>` : ''}
-        </h2>
-        
-        <div class="dashboard-stats">
-          <div class="stat-card">
-            <div class="stat-val">12</div>
-            <div class="stat-label">Уроков пройдено</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-val">3</div>
-            <div class="stat-label">Тестов сдано</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-val accent">5 🔥</div>
-            <div class="stat-label">Дней в Phoenix Forge</div>
-          </div>
-        </div>
+  renderDashboard: () => {
+    if (!window.Auth.isAuthenticated()) {
+      setTimeout(() => { window.location.hash = '#/login'; }, 0);
+      return '<div class="loading-container" style="text-align: center; padding: 100px 20px; color: var(--txt2); font-family: var(--font-body);">Перенаправление на страницу входа...</div>';
+    }
 
-        <section class="dashboard-section">
-          <h3 class="section-title">Продолжить обучение</h3>
-          <div class="courses-grid" style="grid-template-columns: repeat(3, 1fr); gap: 24px;">
-            <div class="catalog-card">
-              <div class="catalog-info">
-                <h3 class="catalog-title">Введение в FIRST</h3>
-                <div class="progress-bar-container"><div class="progress-bar" style="width: 15%;"></div></div>
-                <a href="#/courses/intro" class="btn btn-outline-accent btn-full">Продолжить</a>
-              </div>
-            </div>
-            <div class="catalog-card">
-              <div class="catalog-info">
-                <h3 class="catalog-title">CAD</h3>
-                <div class="progress-bar-container"><div class="progress-bar" style="width: 0%;"></div></div>
-                <a href="#/courses/cad" class="btn btn-outline-accent btn-full">Продолжить</a>
-              </div>
-            </div>
-            <div class="catalog-card">
-              <div class="catalog-info">
-                <h3 class="catalog-title">Билд</h3>
-                <div class="progress-bar-container"><div class="progress-bar" style="width: 5%;"></div></div>
-                <a href="#/courses/build" class="btn btn-outline-accent btn-full">Продолжить</a>
-              </div>
-            </div>
-          </div>
-        </section>
+    setTimeout(window.loadDashboardData, 50);
 
-        <section class="dashboard-section">
-          <h3 class="section-title">Мои сертификаты</h3>
-          <div class="cert-grid">
-            <div class="cert-card locked">
-              <div class="cert-icon">🔒</div>
-              <div class="cert-name">Сертификат: Введение в FTC</div>
+    return `
+      <div class="page-layout dashboard-layout animate-item" id="dashboard-container">
+        <main class="main-content full-width">
+          <h2 class="dashboard-greeting" style="display: flex; justify-content: space-between; align-items: center; gap: 15px; flex-wrap: wrap;">
+            <span>Привет! 👋</span>
+            <button class="btn btn-outline-accent" onclick="window.Auth.logout()" style="font-size: 14px; padding: 6px 12px; cursor: pointer;">Выйти</button>
+          </h2>
+          
+          <div class="dashboard-stats">
+            <div class="stat-card">
+              <div class="stat-val" id="stat-lessons-completed">...</div>
+              <div class="stat-label">Уроков пройдено</div>
             </div>
-            <div class="cert-card locked">
-              <div class="cert-icon">🔒</div>
-              <div class="cert-name">Сертификат: CAD и Билд FTC</div>
+            <div class="stat-card">
+              <div class="stat-val" id="stat-tests-passed">...</div>
+              <div class="stat-label">Тестов сдано</div>
             </div>
-            <div class="cert-card locked">
-              <div class="cert-icon">🔒</div>
-              <div class="cert-name">Сертификат: Кодинг и Алгоритмы FTC</div>
-            </div>
-            <div class="cert-card locked">
-              <div class="cert-icon">🏆</div>
-              <div class="cert-name" style="color: var(--accent);">Phoenix Forge — Full FTC Certificate</div>
+            <div class="stat-card">
+              <div class="stat-val accent" id="stat-days-in-platform">...</div>
+              <div class="stat-label">Дней в Phoenix Forge</div>
             </div>
           </div>
-        </section>
 
-        <section class="dashboard-section">
-          <h3 class="section-title">История тестов</h3>
-          <div class="table-container">
-            <table class="history-table">
-              <thead>
-                <tr>
-                  <th>Тест</th>
-                  <th>Дата</th>
-                  <th>Результат</th>
-                  <th>Статус</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>Дриветрейны</td>
-                  <td>12.04.2026</td>
-                  <td>95%</td>
-                  <td><span class="badge badge-success">Сдан</span></td>
-                </tr>
-                <tr>
-                  <td>Манипуляторы и передачи</td>
-                  <td>10.04.2026</td>
-                  <td>40%</td>
-                  <td><span class="badge badge-error">Не сдан</span></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
-      </main>
-    </div>
-  `
+          <section class="dashboard-section">
+            <h3 class="section-title">Продолжить обучение</h3>
+            <div class="courses-grid" id="dashboard-courses-grid" style="grid-template-columns: repeat(3, 1fr); gap: 24px;">
+              <div style="grid-column: 1/-1; text-align: center; color: var(--txt2); font-family: var(--font-body); padding: 20px;">Загрузка курсов...</div>
+            </div>
+          </section>
+
+          <section class="dashboard-section">
+            <h3 class="section-title">Мои сертификаты</h3>
+            <div class="cert-grid" id="dashboard-certs-grid">
+              <div style="grid-column: 1/-1; text-align: center; color: var(--txt2); font-family: var(--font-body); padding: 20px;">Загрузка сертификатов...</div>
+            </div>
+          </section>
+
+          <section class="dashboard-section">
+            <h3 class="section-title">История тестов</h3>
+            <div class="table-container">
+              <table class="history-table">
+                <thead>
+                  <tr>
+                    <th>Тест</th>
+                    <th>Дата</th>
+                    <th>Результат</th>
+                    <th>Статус</th>
+                  </tr>
+                </thead>
+                <tbody id="dashboard-tests-tbody">
+                  <tr>
+                    <td colspan="4" style="text-align: center; color: var(--txt2); font-family: var(--font-body); padding: 20px;">Загрузка истории...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </main>
+      </div>
+    `;
+  }
 };
 
 // ==========================================
@@ -1905,4 +1870,125 @@ function getMockReview(context, level, note) {
     score: adjustedScore
   };
 }
+
+window.loadDashboardData = async function loadDashboardData() {
+  const container = document.getElementById('dashboard-container');
+  if (!container) return; // Not on dashboard page anymore
+
+  try {
+    const data = await window.apiFetch('/dashboard');
+    
+    // 1. Update Greeting
+    const greetingSpan = container.querySelector('.dashboard-greeting span');
+    if (greetingSpan) {
+      greetingSpan.textContent = `Привет, ${data.display_name || 'Студент'}! 👋`;
+    }
+
+    // 2. Update Stats
+    const lessonsCompletedEl = document.getElementById('stat-lessons-completed');
+    if (lessonsCompletedEl) lessonsCompletedEl.textContent = data.lessons_completed;
+    
+    const testsPassedEl = document.getElementById('stat-tests-passed');
+    if (testsPassedEl) testsPassedEl.textContent = data.tests_passed;
+    
+    const daysInPlatformEl = document.getElementById('stat-days-in-platform');
+    if (daysInPlatformEl) daysInPlatformEl.textContent = data.days_in_platform + ' 🔥';
+
+    // 3. Update Courses
+    const coursesGrid = document.getElementById('dashboard-courses-grid');
+    if (coursesGrid) {
+      if (data.course_progress && data.course_progress.length > 0) {
+        coursesGrid.innerHTML = data.course_progress.map(c => {
+          let courseUrl = '#/courses';
+          const titleLower = c.title.toLowerCase();
+          if (titleLower.includes('введение') || titleLower.includes('intro')) courseUrl = '#/courses/intro';
+          else if (titleLower.includes('cad')) courseUrl = '#/courses/cad';
+          else if (titleLower.includes('билд') || titleLower.includes('build')) courseUrl = '#/courses/build';
+          else if (titleLower.includes('код') || titleLower.includes('sdk')) courseUrl = '#/courses/coding';
+          else if (titleLower.includes('inspire')) courseUrl = '#/courses/inspire';
+
+          return `
+            <div class="catalog-card">
+              <div class="catalog-info">
+                <h3 class="catalog-title">${window.escHtml(c.title)}</h3>
+                <div class="progress-bar-container">
+                  <div class="progress-bar" style="width: ${c.progress_pct}%;"></div>
+                </div>
+                <div style="font-size: 12px; color: var(--txt2); margin-top: 4px; margin-bottom: 12px;">Пройдено: ${c.progress_pct}%</div>
+                <a href="${courseUrl}" class="btn btn-outline-accent btn-full">Продолжить</a>
+              </div>
+            </div>
+          `;
+        }).join('');
+      } else {
+        coursesGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: var(--txt2); font-family: var(--font-body);">Нет доступных курсов.</div>';
+      }
+    }
+
+    // 4. Update Certificates
+    const certsGrid = document.getElementById('dashboard-certs-grid');
+    if (certsGrid) {
+      if (data.certificates && data.certificates.length > 0) {
+        certsGrid.innerHTML = data.certificates.map(cert => {
+          const earnedClass = cert.earned ? '' : 'locked';
+          const icon = cert.earned ? '🏆' : '🔒';
+          return `
+            <div class="cert-card ${earnedClass}">
+              <div class="cert-icon">${icon}</div>
+              <div class="cert-name" style="${cert.earned ? 'color: var(--accent);' : ''}">${window.escHtml(cert.name)}</div>
+            </div>
+          `;
+        }).join('');
+      } else {
+        certsGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: var(--txt2); font-family: var(--font-body);">Сертификаты не найдены.</div>';
+      }
+    }
+
+    // 5. Update Tests History
+    const testsTbody = document.getElementById('dashboard-tests-tbody');
+    if (testsTbody) {
+      if (data.recent_attempts && data.recent_attempts.length > 0) {
+        testsTbody.innerHTML = data.recent_attempts.map(attempt => {
+          const statusText = attempt.passed ? 'Сдан' : 'Не сдан';
+          const statusClass = attempt.passed ? 'badge-success' : 'badge-error';
+          const dateStr = window.fmtDate(attempt.completed_at);
+          const scoreText = attempt.score_pct != null ? `${Math.round(attempt.score_pct)}%` : '—';
+          return `
+            <tr>
+              <td>${window.escHtml(attempt.test_title)}</td>
+              <td>${dateStr}</td>
+              <td>${scoreText}</td>
+              <td><span class="badge ${statusClass}">${statusText}</span></td>
+            </tr>
+          `;
+        }).join('');
+      } else {
+        testsTbody.innerHTML = `
+          <tr>
+            <td colspan="4" style="text-align: center; color: var(--txt2); font-family: var(--font-body); padding: 20px;">Вы еще не проходили тесты.</td>
+          </tr>
+        `;
+      }
+    }
+
+  } catch (err) {
+    console.error("Failed to load dashboard data", err);
+    if (err.status === 401) {
+      window.Auth.clearSession();
+      if (window.updateNavbarAuth) window.updateNavbarAuth();
+      window.location.hash = '#/login';
+      return;
+    }
+    if (container) {
+      container.innerHTML = `
+        <div class="error-container" style="text-align: center; padding: 100px 20px; color: var(--accent); font-family: var(--font-body);">
+          <h3>Не удалось загрузить данные личного кабинета</h3>
+          <p>${window.escHtml(err.detail || 'Проверьте соединение с сервером.')}</p>
+          <button class="btn btn-primary" onclick="window.loadDashboardData()" style="margin-top: 15px; cursor: pointer;">Повторить</button>
+        </div>
+      `;
+    }
+  }
+};
+
 

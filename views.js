@@ -1023,7 +1023,7 @@ window.AppViews = {
       <div class="auth-card">
         <div class="auth-logo"><span class="logo-accent" style="color: #FF4D1C;">P</span>hoenix Forge</div>
         <h2 class="auth-heading">Вход в аккаунт</h2>
-        <form class="auth-form" onsubmit="event.preventDefault(); window.location.hash='#/dashboard'">
+        <form class="auth-form" onsubmit="window.handleLoginSubmit(event)">
           <div class="input-group">
             <label>Email</label>
             <input type="email" placeholder="student@example.com" required>
@@ -1044,7 +1044,7 @@ window.AppViews = {
       <div class="auth-card">
         <div class="auth-logo"><span class="logo-accent" style="color: #FF4D1C;">P</span>hoenix Forge</div>
         <h2 class="auth-heading">Регистрация</h2>
-        <form class="auth-form" onsubmit="event.preventDefault(); window.location.hash='#/dashboard'">
+        <form class="auth-form" onsubmit="window.handleRegisterSubmit(event)">
           <div class="input-group">
             <label>Имя</label>
             <input type="text" placeholder="Иван Иванов" required>
@@ -1067,7 +1067,10 @@ window.AppViews = {
   renderDashboard: () => `
     <div class="page-layout dashboard-layout animate-item">
       <main class="main-content full-width">
-        <h2 class="dashboard-greeting">Привет, Александр! 👋</h2>
+        <h2 class="dashboard-greeting" style="display: flex; justify-content: space-between; align-items: center; gap: 15px; flex-wrap: wrap;">
+          <span>Привет, ${window.Auth.isAuthenticated() ? (window.Auth.getUser()?.display_name || 'Студент') : 'Гость'}! 👋</span>
+          ${window.Auth.isAuthenticated() ? `<button class="btn btn-outline-accent" onclick="window.Auth.logout()" style="font-size: 14px; padding: 6px 12px; cursor: pointer;">Выйти</button>` : ''}
+        </h2>
         
         <div class="dashboard-stats">
           <div class="stat-card">
@@ -1605,7 +1608,7 @@ window.initAISketchReview = function() {
       let result;
       let demoMode = false;
       try {
-        const response = await fetch('/api/ai/sketch-review', {
+        const response = await fetch((window.API_BASE || '') + '/api/ai/sketch-review', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

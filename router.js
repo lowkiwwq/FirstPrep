@@ -94,6 +94,9 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
+    if (window.updateNavbarAuth) {
+      window.updateNavbarAuth();
+    }
     updateActiveNav(hash);
     window.scrollTo(0, 0);
   }

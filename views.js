@@ -778,7 +778,9 @@ window.AppViews = {
         'cad': 'assets/course_cad.jpg',
         'build': 'assets/course_build.jpg',
         'coding': 'assets/course_coding.png',
-        'gamedrive': 'assets/course_gamedrive.png'
+        'gamedrive': 'assets/course_gamedrive.png',
+        'inspire': 'assets/course_inspire.png',
+        'season': 'assets/course_season.jpg'
       };
       const imgUrl = courseImages[slug] || '';
       const bgStyle = imgUrl ? `background: #202022 url('${imgUrl}') no-repeat center/cover;` : 'background: #202022;';

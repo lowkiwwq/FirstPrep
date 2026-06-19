@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
     '/login': AppViews.renderLogin,
     '/register': AppViews.renderRegister,
     '/dashboard': AppViews.renderDashboard,
+    '/admin/courses': AppViews.renderAdminCourses,
   };
 
   let cleanupAntigravity = null;
@@ -29,7 +30,34 @@ document.addEventListener('DOMContentLoaded', () => {
       hash = hash.slice(0, -1);
     }
 
-    const renderFunc = routes[hash] || routes['/'];
+    // Auth role checking for admin panel
+    if (hash.startsWith('/admin/courses')) {
+      const user = window.Auth.getUser();
+      const role = user ? user.role : null;
+      if (role !== 'mentor' && role !== 'admin') {
+        setTimeout(() => { window.location.hash = '#/dashboard'; }, 0);
+        return;
+      }
+      const globalNavbar = document.querySelector('.navbar');
+      if (globalNavbar) globalNavbar.style.display = 'none';
+    } else {
+      const globalNavbar = document.querySelector('.navbar');
+      if (globalNavbar) globalNavbar.style.display = 'block';
+    }
+
+    let renderFunc = routes[hash];
+    
+    // Check dynamic editor route
+    if (!renderFunc && hash.startsWith('/admin/courses/')) {
+      const slug = hash.replace('/admin/courses/', '');
+      if (slug && ['intro', 'cad', 'build', 'coding', 'gamedrive', 'inspire', 'season'].includes(slug)) {
+        renderFunc = () => AppViews.renderAdminCourseEditor(slug);
+      }
+    }
+
+    if (!renderFunc) {
+      renderFunc = routes['/'];
+    }
 
     if (cleanupAntigravity) {
       cleanupAntigravity();

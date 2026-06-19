@@ -34,6 +34,7 @@ CREATE TABLE IF NOT EXISTS public.lessons (
   youtube_id TEXT,
   content_text TEXT,
   display_order INTEGER DEFAULT 0,
+  status TEXT DEFAULT 'published',
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -92,4 +93,21 @@ CREATE TABLE IF NOT EXISTS public.user_certificates (
   certificate_id INTEGER REFERENCES public.certificates(id) ON DELETE CASCADE,
   earned_at TIMESTAMPTZ DEFAULT NOW(),
   PRIMARY KEY (user_id, certificate_id)
+);
+
+CREATE TABLE IF NOT EXISTS public.lesson_content (
+  id SERIAL PRIMARY KEY,
+  lesson_id TEXT UNIQUE NOT NULL,
+  blocks JSONB,
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_by UUID
+);
+
+CREATE TABLE IF NOT EXISTS public.lesson_files (
+  id SERIAL PRIMARY KEY,
+  lesson_id TEXT NOT NULL,
+  file_url TEXT NOT NULL,
+  file_type TEXT NOT NULL,
+  file_name TEXT NOT NULL,
+  size INTEGER NOT NULL
 );

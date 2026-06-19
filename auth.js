@@ -4,7 +4,23 @@ window.Auth = {
   },
   getUser() {
     const raw = localStorage.getItem('pf_user');
-    try { return raw ? JSON.parse(raw) : null; } catch { return null; }
+    try {
+      if (!raw) return null;
+      const user = JSON.parse(raw);
+      if (user && user.email) {
+        const email = user.email.toLowerCase();
+        if (email.includes('admin')) {
+          user.role = 'admin';
+        } else if (email.includes('mentor')) {
+          user.role = 'mentor';
+        } else {
+          user.role = 'student';
+        }
+      } else if (user) {
+        user.role = 'student';
+      }
+      return user;
+    } catch { return null; }
   },
   setSession(token, user) {
     localStorage.setItem('pf_token', token);
@@ -46,15 +62,46 @@ window.Auth = {
     window.location.hash = '#/home';
   }
 };
-
 window.updateNavbarAuth = function updateNavbarAuth() {
   const navActions = document.querySelector('.nav-actions');
   const mobileNav = document.querySelector('.mobile-nav-links');
-  
+  const navLinks = document.querySelector('.nav-links');
   if (window.Auth.isAuthenticated()) {
     const user = window.Auth.getUser();
     const displayName = user ? (user.display_name || user.email || 'Кабинет') : 'Кабинет';
     
+    if (navLinks) {
+      let adminLink = navLinks.querySelector('a[href="#/admin/courses"]');
+      if (user && (user.role === 'mentor' || user.role === 'admin')) {
+        if (!adminLink) {
+          adminLink = document.createElement('a');
+          adminLink.href = '#/admin/courses';
+          adminLink.textContent = 'CMS';
+          const cabinetLink = navLinks.querySelector('a[href="#/dashboard"]');
+          if (cabinetLink) navLinks.insertBefore(adminLink, cabinetLink);
+          else navLinks.appendChild(adminLink);
+        }
+      } else if (adminLink) {
+        adminLink.remove();
+      }
+    }
+
+    if (mobileNav) {
+      let adminLink = mobileNav.querySelector('a[href="#/admin/courses"]');
+      if (user && (user.role === 'mentor' || user.role === 'admin')) {
+        if (!adminLink) {
+          adminLink = document.createElement('a');
+          adminLink.href = '#/admin/courses';
+          adminLink.textContent = 'CMS';
+          const cabinetLink = mobileNav.querySelector('a[href="#/dashboard"]');
+          if (cabinetLink) mobileNav.insertBefore(adminLink, cabinetLink);
+          else mobileNav.appendChild(adminLink);
+        }
+      } else if (adminLink) {
+        adminLink.remove();
+      }
+    }
+
     if (navActions) {
       const authLink = navActions.querySelector('a.btn');
       if (authLink) {
@@ -70,6 +117,15 @@ window.updateNavbarAuth = function updateNavbarAuth() {
       }
     }
   } else {
+    if (navLinks) {
+      const adminLink = navLinks.querySelector('a[href="#/admin/courses"]');
+      if (adminLink) adminLink.remove();
+    }
+    if (mobileNav) {
+      const adminLink = mobileNav.querySelector('a[href="#/admin/courses"]');
+      if (adminLink) adminLink.remove();
+    }
+
     if (navActions) {
       const authLink = navActions.querySelector('a.btn');
       if (authLink) {

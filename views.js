@@ -589,7 +589,12 @@ window.getLessonContentPanelHtml = function(courseSlug, secIdx, lesIdx) {
     `;
   }
 
-  const descHtml = window.getLessonDescription(course.title, section.title, lesson.title);
+  // Trigger dynamic loading of lesson content from backend database
+  setTimeout(() => {
+    if (window.loadLessonContentData) {
+      window.loadLessonContentData(courseSlug, secIdx, lesIdx);
+    }
+  }, 50);
 
   return `
     <div class="lesson-topbar">
@@ -600,8 +605,8 @@ window.getLessonContentPanelHtml = function(courseSlug, secIdx, lesIdx) {
       </div>
     </div>
     ${mediaCardHtml}
-    <div class="lesson-text" style="font-family: var(--font-body); font-size: 15px; color: var(--txt); line-height: 1.6;">
-      ${descHtml}
+    <div id="lesson-dynamic-container" class="lesson-text" style="font-family: var(--font-body); font-size: 15px; color: var(--txt); line-height: 1.6; min-height: 150px;">
+      <div style="text-align: center; padding: 48px; color: var(--txt2);">Загрузка материалов...</div>
     </div>
   `;
 };
@@ -2001,6 +2006,1694 @@ window.loadDashboardData = async function loadDashboardData() {
       `;
     }
   }
+};
+
+// ==========================================================================
+// DYNAMIC LESSON BLOCKS & CMS EDITOR ENGINE
+// ==========================================================================
+
+// 1. Dynamic student lesson content loader
+window.loadLessonContentData = async function(courseSlug, secIdx, lesIdx) {
+  const course = window.CoursesData[courseSlug];
+  const section = course.sections[secIdx];
+  const lesson = section.lessons[lesIdx];
+  const lessonId = `${courseSlug}_${lesson.id}`;
+  
+  const container = document.getElementById('lesson-dynamic-container');
+  if (!container) return;
+  
+  try {
+    const data = await window.apiFetch(`/lessons/${lessonId}/content`);
+    const blocks = data.blocks || [];
+    
+    if (blocks.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state" style="text-align: center; padding: 48px 24px; color: var(--txt2); font-family: var(--font-body);">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto 16px auto; opacity: 0.5; display: block; color: var(--txt2);">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="9" y1="15" x2="15" y2="15"></line>
+            <line x1="9" y1="11" x2="15" y2="11"></line>
+          </svg>
+          <div style="font-size: 15px; font-weight: 500; margin-bottom: 6px; color: #fff;">Контент ещё не загружен</div>
+          <div style="font-size: 13px; opacity: 0.6;">Этот урок пока не содержит учебных материалов.</div>
+        </div>
+      `;
+      return;
+    }
+    
+    container.innerHTML = window.renderLessonBlocks(blocks);
+    window.initLessonBlocksInteractions(container);
+  } catch (err) {
+    console.error("Failed to load lesson content", err);
+    container.innerHTML = `
+      <div style="text-align: center; padding: 32px; color: var(--accent); font-family: var(--font-body); font-size: 14px;">
+        Не удалось загрузить содержимое урока. Пожалуйста, обновите страницу.
+      </div>
+    `;
+  }
+};
+
+// 2. Render blocks list for student and editor preview
+window.renderLessonBlocks = function(blocks) {
+  return blocks.map(block => {
+    const val = block.value || '';
+    const cap = block.caption || '';
+    switch (block.type) {
+      case 'title':
+        return `<h3 class="block-title" style="margin-top: 24px; margin-bottom: 12px; font-family: var(--font-display); color: #fff; font-size: 22px; font-weight: 700;">${window.escHtml(val)}</h3>`;
+      case 'text':
+        return `<p class="block-text" style="line-height: 1.6; margin-bottom: 16px; color: var(--txt);">${window.escHtml(val).replace(/\n/g, '<br>')}</p>`;
+      case 'quote':
+        return `<blockquote class="block-quote" style="border-left: 3px solid var(--accent); padding-left: 16px; margin: 16px 0; color: var(--txt2); font-style: italic;">${window.escHtml(val)}</blockquote>`;
+      case 'image':
+        return `<div class="block-image-wrapper" style="margin: 20px 0; text-align: center;">
+          <img src="${val || 'https://via.placeholder.com/600x350'}" alt="${window.escHtml(cap)}" style="max-width: 100%; border-radius: 8px; border: 1px solid var(--border);" />
+          ${cap ? `<div style="font-size: 13px; color: var(--txt2); margin-top: 8px; font-style: italic;">${window.escHtml(cap)}</div>` : ''}
+        </div>`;
+      case 'video':
+        if (val && (val.includes('youtube.com') || val.includes('youtu.be'))) {
+          let ytId = '';
+          const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+          const match = val.match(regExp);
+          if (match && match[2].length === 11) ytId = match[2];
+          if (ytId) {
+            return `<div class="block-video-wrapper" style="margin: 20px 0; position: relative; padding-bottom: 56.25%; height: 0;">
+              <iframe src="https://www.youtube.com/embed/${ytId}" frameborder="0" allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 8px;"></iframe>
+            </div>`;
+          }
+        }
+        return `<div class="block-video-wrapper" style="margin: 20px 0;">
+          <video controls src="${val}" style="width: 100%; border-radius: 8px; border: 1px solid var(--border);"></video>
+          ${cap ? `<div style="font-size: 13px; color: var(--txt2); margin-top: 8px; font-style: italic;">${window.escHtml(cap)}</div>` : ''}
+        </div>`;
+      case 'pdf':
+        return `<div class="block-pdf-wrapper" style="margin: 16px 0; display: flex; align-items: center; justify-content: space-between; padding: 12px; background: var(--bg2); border: 1px solid var(--border); border-radius: 6px;">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FF2D6B" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+            <div>
+              <div style="font-weight: 500; font-size: 14px; color: #fff;">${window.escHtml(cap || 'Документ PDF')}</div>
+              <div style="font-size: 12px; color: var(--txt2);">Нажмите, чтобы изучить файл</div>
+            </div>
+          </div>
+          <a href="${val}" target="_blank" class="btn btn-outline" style="padding: 6px 12px; font-size: 12px;">Открыть</a>
+        </div>`;
+      case 'table':
+        return `<div class="block-table-wrapper" style="margin: 20px 0; overflow-x: auto;">
+          ${window.renderBlockTableHtml(val)}
+        </div>`;
+      case 'chart':
+        return `<div class="block-chart-wrapper" style="margin: 20px 0; padding: 16px; background: var(--bg2); border: 1px solid var(--border); border-radius: 8px;">
+          ${window.renderCSSChart(val)}
+        </div>`;
+      case 'list':
+        const items = Array.isArray(val) ? val : (val || '').split('\n').filter(Boolean);
+        return `<ul class="block-list" style="margin-left: 20px; margin-bottom: 16px; color: var(--txt);">
+          ${items.map(item => `<li style="margin-bottom: 6px; list-style-type: disc;">${window.escHtml(item)}</li>`).join('')}
+        </ul>`;
+      case 'divider':
+        return `<hr class="block-divider" style="border: 0; border-top: 1px solid var(--border); margin: 24px 0;" />`;
+      case 'card':
+        return `<div class="block-card" style="padding: 20px; background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; margin: 16px 0;">
+          <h4 style="margin-bottom: 8px; color: #fff; font-family: var(--font-display); font-size: 16px; font-weight: bold;">${window.escHtml(cap)}</h4>
+          <p style="color: var(--txt2); font-size: 14px; margin-bottom: 0; line-height: 1.5;">${window.escHtml(val)}</p>
+        </div>`;
+      case 'code':
+        return `<div class="block-code-wrapper" style="margin: 16px 0; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; background: #1e1e1e;">
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: #2d2d2d; border-bottom: 1px solid var(--border);">
+            <span style="font-family: var(--font-mono); font-size: 11px; color: var(--txt2); text-transform: uppercase;">${window.escHtml(block.language || 'python')}</span>
+            <button class="btn-run-code" style="background: none; border: 1px solid var(--accent); color: var(--accent); font-family: var(--font-mono); font-size: 11px; padding: 2px 8px; border-radius: 4px; cursor: pointer;">▶ Запустить</button>
+          </div>
+          <pre style="margin: 0; padding: 12px; overflow-x: auto;"><code class="language-${block.language || 'python'}" style="font-family: var(--font-mono); font-size: 13px; color: #d4d4d4;">${window.escHtml(val)}</code></pre>
+          <div class="code-output-container" style="display: none; padding: 10px 12px; background: #151515; border-top: 1px solid var(--border); font-family: var(--font-mono); font-size: 12px; color: #a6e22e; white-space: pre-wrap;"></div>
+        </div>`;
+      case 'important':
+        return `<div class="block-important" style="display: flex; gap: 12px; padding: 16px; background: rgba(255, 45, 107, 0.05); border: 1px solid rgba(255, 45, 107, 0.2); border-left: 4px solid #FF2D6B; border-radius: 6px; margin: 16px 0;">
+          <span style="font-size: 20px; line-height: 1;">⚠️</span>
+          <div style="font-size: 14px; line-height: 1.5; color: var(--txt);"><strong style="color: #FF2D6B;">ВАЖНО:</strong> ${window.escHtml(val)}</div>
+        </div>`;
+      case 'tip':
+        return `<div class="block-tip" style="display: flex; gap: 12px; padding: 16px; background: rgba(255, 140, 66, 0.05); border: 1px solid rgba(255, 140, 66, 0.2); border-left: 4px solid #FF8C42; border-radius: 6px; margin: 16px 0;">
+          <span style="font-size: 20px; line-height: 1;">💡</span>
+          <div style="font-size: 14px; line-height: 1.5; color: var(--txt);"><strong style="color: #FF8C42;">СОВЕТ:</strong> ${window.escHtml(val)}</div>
+        </div>`;
+      case 'assignment':
+        return `<div class="block-assignment-box" style="padding: 20px; border: 1px dashed var(--accent); background: rgba(255, 77, 28, 0.03); border-radius: 8px; margin: 20px 0;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+            <span style="font-family: var(--font-mono); font-size: 10px; background: var(--accent); color: #fff; padding: 2px 6px; border-radius: 4px; font-weight: bold;">ЗАДАНИЕ</span>
+            <strong style="color: #fff; font-size: 15px;">${window.escHtml(cap || 'Практическая задача')}</strong>
+          </div>
+          <div style="font-size: 14px; color: var(--txt); line-height: 1.6;">${window.escHtml(val)}</div>
+        </div>`;
+      case 'experiment':
+        return `<div class="block-experiment-box" style="padding: 20px; border: 1px dashed #FF2D6B; background: rgba(255, 45, 107, 0.03); border-radius: 8px; margin: 20px 0;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+            <span style="font-family: var(--font-mono); font-size: 10px; background: #FF2D6B; color: #fff; padding: 2px 6px; border-radius: 4px; font-weight: bold;">ЭКСПЕРИМЕНТ</span>
+            <strong style="color: #fff; font-size: 15px;">${window.escHtml(cap || 'Лабораторный эксперимент')}</strong>
+          </div>
+          <div style="font-size: 14px; color: var(--txt); line-height: 1.6;">${window.escHtml(val)}</div>
+        </div>`;
+      case 'goal':
+        return `<div class="block-goal-box" style="padding: 16px; background: rgba(76, 175, 80, 0.05); border: 1px solid rgba(76, 175, 80, 0.2); border-left: 4px solid #4CAF50; border-radius: 6px; margin: 16px 0; display: flex; gap: 12px;">
+          <span style="font-size: 20px; line-height: 1;">🎯</span>
+          <div style="font-size: 14px; color: var(--txt); line-height: 1.5;"><strong style="color: #4CAF50;">ЦЕЛЬ:</strong> ${window.escHtml(val)}</div>
+        </div>`;
+      default:
+        return `<div style="padding: 10px; background: var(--bg2); border-radius: 4px; font-size: 13px; color: var(--txt2); margin-bottom: 12px;">Неизвестный блок: ${block.type}</div>`;
+    }
+  }).join('');
+};
+
+// 3. Beautiful Responsive CSS Charts (Zero external deps!)
+window.renderCSSChart = function(config) {
+  if (!config || !config.data) return '<div style="color:var(--txt2); font-size: 12px;">Нет данных для визуализации</div>';
+  const labels = config.data.labels || [];
+  const dataset = config.data.datasets && config.data.datasets[0] ? config.data.datasets[0] : { data: [] };
+  const data = dataset.data || [];
+  const label = dataset.label || 'Статистика';
+  const maxVal = Math.max(...data.map(v => Number(v) || 0), 1);
+  
+  return `
+    <div style="font-family: var(--font-body); padding: 8px;">
+      <div style="font-weight: 600; font-size: 13px; margin-bottom: 12px; color: #fff; text-align: center;">${window.escHtml(label)}</div>
+      <div style="display: flex; align-items: flex-end; justify-content: space-between; height: 150px; padding-bottom: 24px; border-bottom: 1px solid var(--border); gap: 12px;">
+        ${data.map((val, idx) => {
+          const pct = ((Number(val) || 0) / maxVal) * 100;
+          return `
+            <div style="display: flex; flex-direction: column; align-items: center; flex: 1; height: 100%; justify-content: flex-end; position: relative;">
+              <div style="font-size: 10px; font-family: var(--font-mono); color: var(--accent); margin-bottom: 4px;">${val}</div>
+              <div style="width: 100%; max-width: 32px; height: ${pct}%; background: linear-gradient(180deg, var(--accent), #FF2D6B); border-radius: 3px 3px 0 0; transition: height 0.3s;" title="${labels[idx] || ''}: ${val}"></div>
+              <div style="position: absolute; bottom: -20px; font-size: 10px; color: var(--txt2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">${window.escHtml(labels[idx] || '')}</div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `;
+};
+
+// 4. Render Table Block HTML
+window.renderBlockTableHtml = function(tableData) {
+  if (!tableData) return '<table class="table-view"></table>';
+  let parsed = tableData;
+  if (typeof tableData === 'string') {
+    try {
+      parsed = JSON.parse(tableData);
+    } catch {
+      const lines = tableData.trim().split('\n');
+      if (lines.length > 0) {
+        const rows = lines.map(line => line.split('|').map(s => s.trim()).filter(Boolean));
+        parsed = {
+          headers: rows[0] || [],
+          rows: rows.slice(2) || []
+        };
+      }
+    }
+  }
+  const headers = parsed.headers || [];
+  const rows = parsed.rows || [];
+  return `
+    <table class="table-view" style="width: 100%; border-collapse: collapse; margin-bottom: 16px; font-family: var(--font-body); font-size: 13px;">
+      <thead>
+        <tr style="border-bottom: 2px solid var(--border);">
+          ${headers.map(h => `<th style="text-align: left; padding: 10px; color: #fff; font-weight: 600; border-bottom: 1px solid var(--border);">${window.escHtml(h)}</th>`).join('')}
+        </tr>
+      </thead>
+      <tbody>
+        ${rows.map(r => `
+          <tr style="border-bottom: 1px solid var(--border);">
+            ${r.map(cell => `<td style="padding: 10px; color: var(--txt2);">${window.escHtml(cell)}</td>`).join('')}
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+};
+
+// 5. Code runners trigger wiring
+window.initLessonBlocksInteractions = function(container) {
+  container.querySelectorAll('.block-code-wrapper').forEach(wrapper => {
+    const btn = wrapper.querySelector('.btn-run-code');
+    const codeEl = wrapper.querySelector('code');
+    const outputEl = wrapper.querySelector('.code-output-container');
+    const lang = codeEl.className.replace('language-', '');
+    if (btn && codeEl && outputEl) {
+      btn.addEventListener('click', async () => {
+        btn.disabled = true;
+        const oldText = btn.textContent;
+        btn.textContent = 'Выполнение...';
+        outputEl.style.display = 'block';
+        outputEl.textContent = 'Компиляция и выполнение в песочнице...';
+        try {
+          const res = await window.apiFetch('/api/compile', {
+            method: 'POST',
+            body: JSON.stringify({ language: lang, code: codeEl.textContent })
+          });
+          if (res.status === 'success') {
+            outputEl.textContent = res.output || 'Программа выполнена успешно (нет вывода).';
+            outputEl.style.color = '#a6e22e';
+          } else {
+            outputEl.textContent = res.output || 'Ошибка компиляции/выполнения.';
+            outputEl.style.color = '#f92672';
+          }
+        } catch (err) {
+          outputEl.textContent = 'Ошибка песочницы: ' + (err.detail || 'Сервер недоступен.');
+          outputEl.style.color = '#f92672';
+        } finally {
+          btn.disabled = false;
+          btn.textContent = oldText;
+        }
+      });
+    }
+  });
+};
+
+// ==========================================================================
+// CMS ADMIN DASHBOARD & COURSE EDITOR VIEWS
+// ==========================================================================
+
+// Style Injector for Admin panel CMS
+window.injectCMSStyles = function() {
+  if (document.getElementById('cms-style-block')) return;
+  const style = document.createElement('style');
+  style.id = 'cms-style-block';
+  style.innerHTML = `
+    .admin-wrapper {
+      background: var(--bg);
+      color: var(--txt);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      font-family: var(--font-body);
+    }
+    .admin-navbar {
+      height: 60px;
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .admin-nav-container {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .admin-back-link {
+      color: var(--txt2);
+      text-decoration: none;
+      font-size: 13px;
+      transition: color 0.2s;
+    }
+    .admin-back-link:hover {
+      color: var(--accent);
+    }
+    .admin-nav-title {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 16px;
+      color: #fff;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .admin-container {
+      max-width: 1200px;
+      margin: 40px auto;
+      padding: 0 24px;
+      width: 100%;
+    }
+    .admin-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .admin-table th {
+      padding: 14px 16px;
+      text-align: left;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      text-transform: uppercase;
+      color: var(--txt2);
+      border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,0.01);
+    }
+    .admin-table td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+      color: var(--txt2);
+    }
+    .admin-table tr:hover td {
+      color: #fff;
+      background: rgba(255,255,255,0.01);
+    }
+    .admin-table tr:last-child td {
+      border-bottom: none;
+    }
+    .status-badge {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      text-transform: uppercase;
+      padding: 3px 6px;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+    .status-badge.published {
+      background: rgba(76, 175, 80, 0.1);
+      color: #4CAF50;
+      border: 1px solid rgba(76, 175, 80, 0.2);
+    }
+    .status-badge.draft {
+      background: rgba(255, 140, 66, 0.1);
+      color: #FF8C42;
+      border: 1px solid rgba(255, 140, 66, 0.2);
+    }
+    .editor-workspace {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      height: calc(100vh - 60px);
+    }
+    .editor-sidebar {
+      width: 280px;
+      background: var(--bg2);
+      border-right: 1px solid var(--border);
+      padding: 20px;
+      overflow-y: auto;
+      flex-shrink: 0;
+    }
+    .editor-content-area {
+      flex: 1;
+      padding: 32px 40px;
+      overflow-y: auto;
+      background: var(--bg);
+    }
+    .editor-settings-drawer {
+      width: 260px;
+      background: var(--bg2);
+      border-left: 1px solid var(--border);
+      padding: 20px;
+      overflow-y: auto;
+      flex-shrink: 0;
+    }
+    .sidebar-section-item {
+      margin-bottom: 16px;
+    }
+    .sidebar-section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 8px;
+      background: rgba(255,255,255,0.02);
+      border-radius: 4px;
+      margin-bottom: 6px;
+    }
+    .sidebar-section-title {
+      font-size: 12px;
+      font-weight: bold;
+      color: #fff;
+      cursor: pointer;
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .sidebar-lesson-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 8px;
+      border-radius: 4px;
+      margin-bottom: 3px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .sidebar-lesson-row:hover {
+      background: rgba(255,255,255,0.02);
+    }
+    .sidebar-lesson-row.active {
+      background: rgba(255, 77, 28, 0.08);
+      border: 1px solid rgba(255, 77, 28, 0.18);
+    }
+    .sidebar-lesson-title {
+      font-size: 12px;
+      color: var(--txt2);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex: 1;
+    }
+    .sidebar-lesson-row.active .sidebar-lesson-title {
+      color: #fff;
+      font-weight: 500;
+    }
+    .sidebar-action-btn {
+      background: none;
+      border: none;
+      color: var(--txt2);
+      cursor: pointer;
+      padding: 2px;
+      font-size: 11px;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .sidebar-section-header:hover .sidebar-action-btn,
+    .sidebar-lesson-row:hover .sidebar-action-btn {
+      opacity: 1;
+    }
+    .sidebar-action-btn:hover {
+      color: var(--accent);
+    }
+    .admin-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-backdrop {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px);
+    }
+    .modal-content {
+      position: relative;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      width: 90%;
+      max-width: 480px;
+      max-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .modal-header h3 {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 800;
+      color: #fff;
+      margin: 0;
+    }
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--txt2);
+      font-size: 20px;
+      cursor: pointer;
+    }
+    .block-types-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+    .block-type-card {
+      padding: 10px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.2s;
+    }
+    .block-type-card:hover {
+      border-color: var(--accent);
+      background: rgba(255, 77, 28, 0.02);
+    }
+    .block-type-icon {
+      font-size: 18px;
+    }
+    .block-type-info {
+      display: flex;
+      flex-direction: column;
+    }
+    .block-type-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: #fff;
+    }
+    .block-type-desc {
+      font-size: 10px;
+      color: var(--txt2);
+    }
+    .cms-block-row {
+      position: relative;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 16px;
+      transition: all 0.2s;
+    }
+    .cms-block-row:hover {
+      border-color: rgba(255,255,255,0.06);
+    }
+    .cms-block-controls {
+      position: absolute;
+      right: 12px;
+      top: 12px;
+      display: flex;
+      gap: 6px;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .cms-block-row:hover .cms-block-controls {
+      opacity: 1;
+    }
+    .cms-control-btn {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--txt2);
+      padding: 3px 6px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 10px;
+    }
+    .cms-control-btn:hover {
+      color: #fff;
+      border-color: var(--accent);
+    }
+    .cms-control-btn.delete:hover {
+      color: #fff;
+      border-color: #FF2D6B;
+      background: rgba(255, 45, 107, 0.05);
+    }
+    .cms-block-label {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+    }
+    .cms-textarea {
+      width: 100%;
+      background: none;
+      border: none;
+      border-bottom: 1px solid transparent;
+      color: #fff;
+      font-family: var(--font-body);
+      font-size: 13px;
+      resize: vertical;
+      padding: 4px 0;
+    }
+    .cms-textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    .cms-input {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: #fff;
+      padding: 6px 10px;
+      border-radius: 4px;
+      font-size: 13px;
+      font-family: var(--font-body);
+      width: 100%;
+    }
+    .cms-input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    .cms-select {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: #fff;
+      padding: 6px 10px;
+      border-radius: 4px;
+      font-size: 13px;
+      width: 100%;
+    }
+    .save-status {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--txt2);
+      margin-right: 12px;
+    }
+    .save-status.saving {
+      color: var(--accent);
+    }
+    .save-status.error {
+      color: #FF2D6B;
+    }
+  `;
+  document.head.appendChild(style);
+};
+
+// Toast notification helper
+window.showToast = function(message, type = 'success') {
+  let container = document.getElementById('toast-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'toast-container';
+    container.style.position = 'fixed';
+    container.style.bottom = '24px';
+    container.style.right = '24px';
+    container.style.zIndex = '10000';
+    container.style.display = 'flex';
+    container.style.flexDirection = 'column';
+    container.style.gap = '8px';
+    document.body.appendChild(container);
+  }
+  const toast = document.createElement('div');
+  toast.style.background = 'var(--bg2)';
+  toast.style.color = '#fff';
+  toast.style.padding = '10px 16px';
+  toast.style.borderRadius = '6px';
+  toast.style.border = '1px solid var(--border)';
+  toast.style.borderLeft = `4px solid ${type === 'success' ? '#FF8C42' : '#FF2D6B'}`;
+  toast.style.fontSize = '13px';
+  toast.style.boxShadow = '0 10px 25px rgba(0,0,0,0.35)';
+  toast.style.transform = 'translateY(80px)';
+  toast.style.opacity = '0';
+  toast.style.transition = 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+  toast.innerHTML = `<span style="font-weight: 500;">${window.escHtml(message)}</span>`;
+  container.appendChild(toast);
+  setTimeout(() => {
+    toast.style.transform = 'translateY(0)';
+    toast.style.opacity = '1';
+  }, 50);
+  setTimeout(() => {
+    toast.style.transform = 'translateY(-20px)';
+    toast.style.opacity = '0';
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+};
+
+// 6. View: List of courses CMS catalog
+window.AppViews.renderAdminCourses = function() {
+  window.injectCMSStyles();
+  setTimeout(window.loadAdminCoursesData, 50);
+  return `
+    <div class="admin-wrapper">
+      <div class="admin-navbar">
+        <div class="admin-nav-container">
+          <a href="#/dashboard" class="admin-back-link">← В кабинет</a>
+          <div class="admin-nav-title">Управление курсами CMS</div>
+          <div style="width: 80px;"></div>
+        </div>
+      </div>
+      <div class="admin-container" id="admin-courses-container">
+        <div style="text-align: center; padding: 100px 20px; color: var(--txt2); font-family: var(--font-body);">Загрузка структуры курсов...</div>
+      </div>
+    </div>
+  `;
+};
+
+// Load courses table
+window.loadAdminCoursesData = async function() {
+  const container = document.getElementById('admin-courses-container');
+  if (!container) return;
+  try {
+    const courses = await window.apiFetch('/admin/courses');
+    
+    let tableRowsHtml = courses.map(c => {
+      const lastMod = new Date(c.last_modified).toLocaleString('ru-RU', { dateStyle: 'short', timeStyle: 'short' });
+      const statusBadge = `<span class="status-badge ${c.status}">${c.status === 'published' ? 'активен' : 'черновик'}</span>`;
+      return `
+        <tr>
+          <td style="font-weight:600; color:#fff;">${window.escHtml(c.title)}</td>
+          <td style="font-family:var(--font-mono); font-size:12px;">${window.escHtml(c.category)}</td>
+          <td>${c.sections_count}</td>
+          <td>${c.lessons_count}</td>
+          <td>${statusBadge}</td>
+          <td>${lastMod}</td>
+          <td>
+            <div style="display:flex; gap:12px;">
+              <a href="#/admin/courses/${c.category}" class="admin-back-link" style="color:var(--accent); font-weight:600;">Редактор</a>
+              <a href="#/courses/${c.category}" class="admin-back-link" target="_blank" style="color:var(--txt2);">Превью</a>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    container.innerHTML = `
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Название курса</th>
+            <th>Слуг (Slug)</th>
+            <th>Разделов</th>
+            <th>Уроков</th>
+            <th>Статус</th>
+            <th>Изменен</th>
+            <th>Действия</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${tableRowsHtml}
+        </tbody>
+      </table>
+    `;
+  } catch (err) {
+    console.error("Failed to load CMS courses list", err);
+    container.innerHTML = `
+      <div style="text-align: center; padding: 48px; color: var(--accent); font-family: var(--font-body);">
+        <h3>Не удалось загрузить список курсов</h3>
+        <p>${window.escHtml(err.detail || 'Сервер временно недоступен.')}</p>
+      </div>
+    `;
+  }
+};
+
+// 7. View: Dynamic course tree and Notion-like blocks editor workspace
+window.AppViews.renderAdminCourseEditor = function(slug) {
+  window.injectCMSStyles();
+  window.currentCourseSlug = slug;
+  window.currentBlocks = [];
+  window.selectedLessonId = null;
+  window.autoSaveTimeout = null;
+  
+  setTimeout(() => window.loadAdminEditorData(slug), 50);
+  
+  return `
+    <div class="admin-wrapper" id="admin-editor-layout">
+      <!-- Navbar -->
+      <div class="admin-navbar">
+        <div class="admin-nav-container">
+          <a href="#/admin/courses" class="admin-back-link">← В панель CMS</a>
+          <div class="admin-nav-title" id="admin-editor-breadcrumbs">Курсы / ...</div>
+          <div class="admin-nav-actions" style="display:flex; align-items:center; gap:12px;">
+            <span class="save-status" id="save-status-indicator">Все изменения сохранены</span>
+            <button class="btn btn-outline" id="btn-editor-preview" style="font-size:12px; padding:6px 12px;">Предпросмотр</button>
+            <button class="btn btn-primary" id="btn-editor-save" style="font-size:12px; padding:6px 12px;">Сохранить</button>
+          </div>
+        </div>
+      </div>
+      <!-- Workspace -->
+      <div class="editor-workspace">
+        <aside class="editor-sidebar">
+          <div class="sidebar-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+            <h3 style="font-size:12px; text-transform:uppercase; color:var(--txt2); font-family:var(--font-mono); margin:0;">Структура</h3>
+            <button class="btn-sidebar-add" id="btn-add-section" title="Добавить секцию" style="background:none; border:1px solid var(--accent); color:var(--accent); border-radius:4px; padding:2px 6px; font-size:11px; cursor:pointer;">+ Секция</button>
+          </div>
+          <div class="course-tree" id="editor-course-tree">
+            <div style="text-align:center; color:var(--txt2); padding:20px; font-size:12px;">Загрузка дерева...</div>
+          </div>
+        </aside>
+        
+        <main class="editor-content-area" id="editor-blocks-container">
+          <div style="text-align:center; padding:100px 20px; color:var(--txt2); font-family:var(--font-body);">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="opacity:0.3; margin-bottom:16px;">
+              <path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+            </svg>
+            <h3>Выберите урок в меню слева</h3>
+            <p style="font-size:13px; opacity:0.6; margin-top:8px;">Здесь будет открыт визуальный конструктор блоков.</p>
+          </div>
+        </main>
+        
+        <aside class="editor-settings-drawer" id="editor-settings-drawer" style="display:none;">
+          <div class="drawer-header" style="font-family:var(--font-mono); font-size:11px; text-transform:uppercase; color:var(--txt2); border-bottom:1px solid var(--border); padding-bottom:8px; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center;">
+            <span>Настройки урока</span>
+            <button id="btn-close-settings" style="background:none; border:none; color:var(--txt2); cursor:pointer; font-size:16px; font-weight:bold;">×</button>
+          </div>
+          <div class="drawer-body" id="lesson-settings-fields"></div>
+        </aside>
+      </div>
+      
+      <!-- Block Picker Modal -->
+      <div class="admin-modal" id="block-picker-modal" style="display:none;">
+        <div class="modal-backdrop" onclick="window.closeBlockPicker()"></div>
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3>Добавить элемент</h3>
+            <button class="modal-close" onclick="window.closeBlockPicker()">×</button>
+          </div>
+          <div class="modal-search-wrapper" style="margin-bottom: 12px;">
+            <input type="text" id="block-search" placeholder="Поиск блоков..." style="width:100%; padding:8px 12px; background:var(--bg); border:1px solid var(--border); border-radius:6px; color:#fff; font-size:13px;" />
+          </div>
+          <div class="block-types-grid" id="block-types-grid"></div>
+        </div>
+      </div>
+    </div>
+  `;
+};
+
+// Load course details: structure, sections, lessons tree
+window.loadAdminEditorData = async function(slug) {
+  try {
+    const data = await window.apiFetch(`/admin/courses/${slug}`);
+    window.currentCourse = data.course;
+    window.currentSections = data.sections || [];
+    
+    // Set breadcrumbs
+    const crumbs = document.getElementById('admin-editor-breadcrumbs');
+    if (crumbs) crumbs.textContent = `Курсы / ${data.course.title}`;
+    
+    // Render tree sidebar
+    window.renderEditorSidebarTree();
+    
+    // Wire action buttons
+    document.getElementById('btn-add-section').onclick = window.addCMSSection;
+    document.getElementById('btn-editor-save').onclick = window.saveCMSBlocks;
+    document.getElementById('btn-editor-preview').onclick = window.toggleCMSPreviewMode;
+    document.getElementById('btn-close-settings').onclick = () => {
+      document.getElementById('editor-settings-drawer').style.display = 'none';
+    };
+    
+    // Setup block picker modal search filter
+    const searchInput = document.getElementById('block-search');
+    if (searchInput) {
+      searchInput.oninput = (e) => {
+        const query = e.target.value.toLowerCase();
+        document.querySelectorAll('.block-type-card').forEach(card => {
+          const name = card.querySelector('.block-type-name').textContent.toLowerCase();
+          const desc = card.querySelector('.block-type-desc').textContent.toLowerCase();
+          if (name.includes(query) || desc.includes(query)) {
+            card.style.display = 'flex';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      };
+    }
+  } catch (err) {
+    console.error("Failed to load admin editor structure", err);
+    window.showToast("Ошибка при загрузке структуры курса", "error");
+  }
+};
+
+// Render course tree structure in sidebar
+window.renderEditorSidebarTree = function() {
+  const treeContainer = document.getElementById('editor-course-tree');
+  if (!treeContainer) return;
+  
+  if (window.currentSections.length === 0) {
+    treeContainer.innerHTML = `<div style="text-align:center; color:var(--txt2); padding:20px; font-size:12px;">Нет разделов. Нажмите "+ Секция" чтобы начать.</div>`;
+    return;
+  }
+  
+  let treeHtml = window.currentSections.map((section, secIdx) => {
+    const lessons = section.lessons || [];
+    
+    let lessonsHtml = lessons.map(les => {
+      const isActive = window.selectedLessonId === String(les.id);
+      let typeLabel = '📄';
+      if (les.type === 'video') typeLabel = '▶';
+      else if (les.type === 'assignment' || les.type === 'задание') typeLabel = '📝';
+      else if (les.type === 'experiment' || les.type === 'эксперимент') typeLabel = '🧪';
+      else if (les.type === 'ai') typeLabel = '🤖';
+      
+      const badge = les.status === 'draft' ? `<span style="font-size:9px; color:var(--accent); font-family:var(--font-mono); margin-left:4px;">черновик</span>` : '';
+      
+      return `
+        <div class="sidebar-lesson-row ${isActive ? 'active' : ''}" onclick="window.selectCMSLesson('${les.id}')">
+          <span style="margin-right:6px; font-size:12px;">${typeLabel}</span>
+          <span class="sidebar-lesson-title">${window.escHtml(les.title)} ${badge}</span>
+          <button class="sidebar-action-btn" onclick="window.deleteCMSLesson(event, '${les.id}')" title="Удалить урок">🗑️</button>
+        </div>
+      `;
+    }).join('');
+    
+    return `
+      <div class="sidebar-section-item">
+        <div class="sidebar-section-header">
+          <span class="sidebar-section-title" title="${window.escHtml(section.title)}">${secIdx + 1}. ${window.escHtml(section.title)}</span>
+          <div style="display:flex; gap:4px;">
+            <button class="sidebar-action-btn" onclick="window.renameCMSSection('${section.section_num}', '${window.escHtml(section.title)}')" title="Переименовать раздел">✏️</button>
+            <button class="sidebar-action-btn" onclick="window.addCMSLessonDialog('${section.section_num}')" title="Добавить урок">+</button>
+            <button class="sidebar-action-btn" onclick="window.deleteCMSSection('${section.section_num}')" title="Удалить раздел">🗑️</button>
+          </div>
+        </div>
+        <div style="padding-left:12px;">
+          ${lessonsHtml}
+        </div>
+      </div>
+    `;
+  }).join('');
+  
+  treeContainer.innerHTML = treeHtml;
+};
+
+// Add Section handler
+window.addCMSSection = async function() {
+  const title = prompt("Введите название нового раздела:");
+  if (!title) return;
+  try {
+    await window.apiFetch(`/admin/courses/${window.currentCourseSlug}/sections`, {
+      method: 'POST',
+      body: JSON.stringify({ title })
+    });
+    window.showToast("Раздел создан");
+    window.loadAdminEditorData(window.currentCourseSlug);
+  } catch (err) {
+    window.showToast("Ошибка при создании раздела", "error");
+  }
+};
+
+// Rename Section
+window.renameCMSSection = async function(sectionNum, currentTitle) {
+  const title = prompt("Введите новое название раздела:", currentTitle);
+  if (!title || title === currentTitle) return;
+  try {
+    await window.apiFetch(`/admin/courses/${window.currentCourseSlug}/sections/${sectionNum}/rename`, {
+      method: 'PUT',
+      body: JSON.stringify({ title })
+    });
+    window.showToast("Раздел изменен");
+    window.loadAdminEditorData(window.currentCourseSlug);
+  } catch (err) {
+    window.showToast("Ошибка при переименовании", "error");
+  }
+};
+
+// Delete Section
+window.deleteCMSSection = async function(sectionNum) {
+  if (!confirm("Вы уверены, что хотите удалить весь этот раздел и все его уроки? Это действие необратимо!")) return;
+  try {
+    await window.apiFetch(`/admin/courses/${window.currentCourseSlug}/sections/${sectionNum}`, {
+      method: 'DELETE'
+    });
+    window.showToast("Раздел удален");
+    if (window.selectedLessonId) {
+      window.selectedLessonId = null;
+      document.getElementById('editor-blocks-container').innerHTML = `
+        <div style="text-align:center; padding:100px 20px; color:var(--txt2);">
+          <h3>Выберите урок в меню слева</h3>
+        </div>
+      `;
+      document.getElementById('editor-settings-drawer').style.display = 'none';
+    }
+    window.loadAdminEditorData(window.currentCourseSlug);
+  } catch (err) {
+    window.showToast("Ошибка при удалении", "error");
+  }
+};
+
+// Add Lesson Dialog
+window.addCMSLessonDialog = async function(sectionNum) {
+  const title = prompt("Введите название нового урока:");
+  if (!title) return;
+  const type = prompt("Введите тип урока (video, info, assignment, experiment, ai) [по умолчанию info]:", "info") || "info";
+  try {
+    const newLesson = await window.apiFetch(`/admin/courses/${window.currentCourseSlug}/sections/${sectionNum}/lessons`, {
+      method: 'POST',
+      body: JSON.stringify({ title, type })
+    });
+    window.showToast("Урок создан");
+    window.loadAdminEditorData(window.currentCourseSlug);
+    window.selectCMSLesson(String(newLesson.id));
+  } catch (err) {
+    window.showToast("Ошибка при создании урока", "error");
+  }
+};
+
+// Delete Lesson
+window.deleteCMSLesson = async function(event, lessonId) {
+  event.stopPropagation();
+  if (!confirm("Удалить этот урок и весь его контент?")) return;
+  try {
+    await window.apiFetch(`/admin/lessons/${lessonId}`, {
+      method: 'DELETE'
+    });
+    window.showToast("Урок удален");
+    if (window.selectedLessonId === String(lessonId)) {
+      window.selectedLessonId = null;
+      document.getElementById('editor-blocks-container').innerHTML = `
+        <div style="text-align:center; padding:100px 20px; color:var(--txt2);">
+          <h3>Выберите урок в меню слева</h3>
+        </div>
+      `;
+      document.getElementById('editor-settings-drawer').style.display = 'none';
+    }
+    window.loadAdminEditorData(window.currentCourseSlug);
+  } catch (err) {
+    window.showToast("Ошибка при удалении", "error");
+  }
+};
+
+// Select and load lesson into the editor
+window.selectCMSLesson = async function(lessonId) {
+  window.selectedLessonId = String(lessonId);
+  window.currentBlocks = [];
+  
+  document.querySelectorAll('.sidebar-lesson-row').forEach(row => row.classList.remove('active'));
+  window.renderEditorSidebarTree();
+  
+  const blocksContainer = document.getElementById('editor-blocks-container');
+  blocksContainer.innerHTML = `<div style="text-align:center; padding:100px 20px; color:var(--txt2);">Загрузка контента урока...</div>`;
+  
+  try {
+    const data = await window.apiFetch(`/lessons/${lessonId}/content`);
+    window.currentBlocks = data.blocks || [];
+    
+    let lessonInfo = null;
+    for (const sec of window.currentSections) {
+      const found = sec.lessons.find(l => String(l.id) === String(lessonId));
+      if (found) {
+        lessonInfo = found;
+        break;
+      }
+    }
+    
+    if (lessonInfo) {
+      window.currentLessonSettings = lessonInfo;
+      const drawer = document.getElementById('editor-settings-drawer');
+      drawer.style.display = 'block';
+      
+      const fieldsContainer = document.getElementById('lesson-settings-fields');
+      const durationMin = Math.round((lessonInfo.duration_sec || 600) / 60);
+      
+      fieldsContainer.innerHTML = `
+        <div class="input-group" style="margin-bottom:12px;">
+          <label style="font-size:11px; color:var(--txt2); display:block; margin-bottom:4px;">Название урока</label>
+          <input type="text" id="settings-title" class="cms-input" value="${window.escHtml(lessonInfo.title)}" />
+        </div>
+        <div class="input-group" style="margin-bottom:12px;">
+          <label style="font-size:11px; color:var(--txt2); display:block; margin-bottom:4px;">Тип урока</label>
+          <select id="settings-type" class="cms-select">
+            <option value="info" ${lessonInfo.type.toLowerCase() === 'info' ? 'selected' : ''}>ИНФО (Text)</option>
+            <option value="video" ${lessonInfo.type.toLowerCase() === 'video' ? 'selected' : ''}>ВИДЕО (Video)</option>
+            <option value="assignment" ${lessonInfo.type.toLowerCase() === 'assignment' ? 'selected' : ''}>ЗАДАНИЕ (Task)</option>
+            <option value="experiment" ${lessonInfo.type.toLowerCase() === 'experiment' ? 'selected' : ''}>ЭКСПЕРИМЕНТ (Experiment)</option>
+            <option value="live" ${lessonInfo.type.toLowerCase() === 'live' ? 'selected' : ''}>LIVE (Мониторинг)</option>
+            <option value="ai" ${lessonInfo.type.toLowerCase() === 'ai' ? 'selected' : ''}>AI (Sketch Review)</option>
+          </select>
+        </div>
+        <div class="input-group" style="margin-bottom:12px;">
+          <label style="font-size:11px; color:var(--txt2); display:block; margin-bottom:4px;">Статус</label>
+          <select id="settings-status" class="cms-select">
+            <option value="published" ${lessonInfo.status === 'published' ? 'selected' : ''}>Опубликован</option>
+            <option value="draft" ${lessonInfo.status === 'draft' ? 'selected' : ''}>Черновик</option>
+          </select>
+        </div>
+        <div class="input-group" style="margin-bottom:12px;">
+          <label style="font-size:11px; color:var(--txt2); display:block; margin-bottom:4px;">Длительность (мин)</label>
+          <input type="number" id="settings-duration" class="cms-input" value="${durationMin}" min="1" />
+        </div>
+        <div style="margin-top:16px;">
+          <button class="btn btn-primary btn-full" onclick="window.saveLessonSettings()" style="font-size:12px; padding:6px;">Применить</button>
+        </div>
+      `;
+    }
+    
+    window.renderBlocksEditor();
+  } catch (err) {
+    console.error("Failed to load lesson in editor", err);
+    window.showToast("Ошибка при загрузке данных урока", "error");
+  }
+};
+
+// Render CMS Notion-like blocks in main workspace
+window.renderBlocksEditor = function() {
+  const container = document.getElementById('editor-blocks-container');
+  if (!container) return;
+  
+  if (window.currentBlocks.length === 0) {
+    container.innerHTML = `
+      <div style="text-align:center; padding:60px 20px; border: 1px dashed var(--border); border-radius:8px; color:var(--txt2); font-family:var(--font-body);">
+        <h4>В этом уроке нет блоков контента</h4>
+        <button class="btn btn-primary" onclick="window.openBlockPicker(0)" style="margin-top:12px; font-size:12px;">+ Добавить блок</button>
+      </div>
+    `;
+    return;
+  }
+  
+  let blocksHtml = window.currentBlocks.map((block, idx) => {
+    let blockInputHtml = '';
+    const val = block.value || '';
+    const cap = block.caption || '';
+    
+    switch (block.type) {
+      case 'title':
+        blockInputHtml = `<input type="text" class="cms-input" data-idx="${idx}" data-field="value" value="${window.escHtml(val)}" placeholder="Введите заголовок..." style="font-size:18px; font-weight:bold; height:auto; padding:8px 0; border:none; border-bottom:1px solid var(--border); background:none;" />`;
+        break;
+      case 'text':
+        blockInputHtml = `<textarea class="cms-textarea" data-idx="${idx}" data-field="value" placeholder="Напишите текст параграфа..." rows="3" style="font-size:14px; line-height:1.6;">${window.escHtml(val)}</textarea>`;
+        break;
+      case 'quote':
+        blockInputHtml = `<textarea class="cms-textarea" data-idx="${idx}" data-field="value" placeholder="Напишите текст цитаты..." rows="2" style="font-style:italic; border-left:3px solid var(--accent); padding-left:12px;">${window.escHtml(val)}</textarea>`;
+        break;
+      case 'image':
+      case 'video':
+      case 'pdf':
+        blockInputHtml = `
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div style="display:flex; gap:10px; align-items:center;">
+              <input type="text" class="cms-input" data-idx="${idx}" data-field="value" value="${window.escHtml(val)}" placeholder="URL медиа-файла..." style="flex:1;" />
+              <button class="btn btn-outline" style="font-size:11px; padding:6px 12px; position:relative; overflow:hidden;">
+                Загрузить
+                <input type="file" onchange="window.uploadCMSFile(${idx}, this, '${block.type === 'image' ? 'images' : block.type === 'video' ? 'videos' : 'files'}')" style="position:absolute; left:0; top:0; opacity:0; width:100%; height:100%; cursor:pointer;" />
+              </button>
+            </div>
+            <input type="text" class="cms-input" data-idx="${idx}" data-field="caption" value="${window.escHtml(cap)}" placeholder="Подпись/Заголовок файла..." />
+            ${block.type === 'image' && val ? `<div style="margin-top:8px; text-align:center;"><img src="${val}" style="max-height:120px; border-radius:4px; border:1px solid var(--border);" /></div>` : ''}
+            ${block.type === 'video' && val ? `<div style="margin-top:8px; font-size:11px; color:#4CAF50;">✓ Видео привязано</div>` : ''}
+            ${block.type === 'pdf' && val ? `<div style="margin-top:8px; font-size:11px; color:#4CAF50;">✓ Документ привязан</div>` : ''}
+          </div>
+        `;
+        break;
+      case 'list':
+        blockInputHtml = `<textarea class="cms-textarea" data-idx="${idx}" data-field="value" placeholder="Каждая строка - элемент списка..." rows="3">${window.escHtml(val)}</textarea>`;
+        break;
+      case 'divider':
+        blockInputHtml = `<div style="border-top:1px solid var(--border); padding:10px 0; color:var(--txt2); font-size:11px; font-family:var(--font-mono);">----- РАЗДЕЛИТЕЛЬНАЯ ЛИНИЯ -----</div>`;
+        break;
+      case 'card':
+        blockInputHtml = `
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <input type="text" class="cms-input" data-idx="${idx}" data-field="caption" value="${window.escHtml(cap)}" placeholder="Заголовок карточки..." style="font-weight:bold;" />
+            <textarea class="cms-textarea" data-idx="${idx}" data-field="value" placeholder="Описание..." rows="2">${window.escHtml(val)}</textarea>
+          </div>
+        `;
+        break;
+      case 'code':
+        blockInputHtml = `
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div style="display:flex; gap:12px; align-items:center;">
+              <select class="cms-select" data-idx="${idx}" data-field="language" style="width:120px; font-family:var(--font-mono); font-size:11px;">
+                <option value="python" ${block.language === 'python' ? 'selected' : ''}>Python</option>
+                <option value="cpp" ${block.language === 'cpp' ? 'selected' : ''}>C++</option>
+                <option value="java" ${block.language === 'java' ? 'selected' : ''}>Java</option>
+                <option value="javascript" ${block.language === 'javascript' ? 'selected' : ''}>JS</option>
+              </select>
+              <button class="btn btn-outline-accent" onclick="window.runCodeBlockInCMS(${idx})" style="font-size:10px; padding:3px 8px;">Тест запуска</button>
+            </div>
+            <textarea class="cms-textarea" data-idx="${idx}" data-field="value" placeholder="Напишите исходный код..." rows="5" style="font-family:var(--font-mono); font-size:12px; background:#1e1e1e; padding:8px; border-radius:4px; border:1px solid var(--border); color:#d4d4d4;">${window.escHtml(val)}</textarea>
+            <div class="cms-code-output" id="cms-code-out-${idx}" style="display:none; font-family:var(--font-mono); font-size:11px; padding:8px; background:#111; border-radius:4px; color:#ff4d4d; white-space:pre-wrap;"></div>
+          </div>
+        `;
+        break;
+      case 'important':
+        blockInputHtml = `<textarea class="cms-textarea" data-idx="${idx}" data-field="value" placeholder="Важное замечание..." rows="2" style="border-left:3px solid #FF2D6B; padding-left:12px; color:#fff;">${window.escHtml(val)}</textarea>`;
+        break;
+      case 'tip':
+        blockInputHtml = `<textarea class="cms-textarea" data-idx="${idx}" data-field="value" placeholder="Полезный совет..." rows="2" style="border-left:3px solid #FF8C42; padding-left:12px; color:#fff;">${window.escHtml(val)}</textarea>`;
+        break;
+      case 'assignment':
+      case 'experiment':
+        blockInputHtml = `
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <input type="text" class="cms-input" data-idx="${idx}" data-field="caption" value="${window.escHtml(cap)}" placeholder="${block.type === 'assignment' ? 'Название практического задания...' : 'Название лабораторной...'}" style="font-weight:bold;" />
+            <textarea class="cms-textarea" data-idx="${idx}" data-field="value" placeholder="Описание шагов..." rows="3">${window.escHtml(val)}</textarea>
+          </div>
+        `;
+        break;
+      case 'goal':
+        blockInputHtml = `<textarea class="cms-textarea" data-idx="${idx}" data-field="value" placeholder="Целевой показатель/метрика..." rows="2" style="border-left:3px solid #4CAF50; padding-left:12px; color:#fff;">${window.escHtml(val)}</textarea>`;
+        break;
+      case 'table':
+        blockInputHtml = window.renderVisualTableEditor(idx, val);
+        break;
+      case 'chart':
+        blockInputHtml = window.renderChartBlockEditor(idx, val);
+        break;
+      default:
+        blockInputHtml = `<div>Редактор для ${block.type} отсутствует.</div>`;
+    }
+    
+    return `
+      <div class="cms-block-row">
+        <div class="cms-block-label">${block.type}</div>
+        <div class="cms-block-controls">
+          <button class="cms-control-btn" onclick="window.moveBlockUp(${idx})" title="Поднять">▲</button>
+          <button class="cms-control-btn" onclick="window.moveBlockDown(${idx})" title="Опустить">▼</button>
+          <button class="cms-control-btn" onclick="window.openBlockPicker(${idx + 1})" title="Вставить блок">+</button>
+          <button class="cms-control-btn delete" onclick="window.deleteBlock(${idx})" title="Удалить">🗑️</button>
+        </div>
+        <div class="cms-block-body">
+          ${blockInputHtml}
+        </div>
+      </div>
+    `;
+  }).join('');
+  
+  container.innerHTML = `
+    <div style="max-width:760px; margin: 0 auto; padding-bottom:100px;">
+      <div style="margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
+        <button class="btn btn-outline" onclick="window.openBlockPicker(0)" style="font-size:11px; padding:6px 12px;">+ Вставить в начало</button>
+      </div>
+      ${blocksHtml}
+      <div style="margin-top:20px; text-align:center;">
+        <button class="btn btn-primary" onclick="window.openBlockPicker(window.currentBlocks.length)" style="font-size:12px; padding:8px 20px;">+ Добавить элемент в конец</button>
+      </div>
+    </div>
+  `;
+  
+  // Bind live inputs listeners for standard controls
+  container.querySelectorAll('input.cms-input, textarea.cms-textarea, select.cms-select').forEach(el => {
+    el.oninput = (e) => {
+      const idx = parseInt(e.target.getAttribute('data-idx'));
+      const field = e.target.getAttribute('data-field');
+      if (!isNaN(idx) && field) {
+        window.currentBlocks[idx][field] = e.target.value;
+        window.triggerCMSAutoSave();
+      }
+    };
+  });
+
+  // Bind visual table editor inputs
+  container.querySelectorAll('.cms-table-header').forEach(el => {
+    el.oninput = (e) => {
+      const blockIdx = parseInt(e.target.getAttribute('data-block-id'));
+      const colIdx = parseInt(e.target.getAttribute('data-col'));
+      window.currentBlocks[blockIdx].value.headers[colIdx] = e.target.value;
+      window.triggerCMSAutoSave();
+    };
+  });
+  container.querySelectorAll('.cms-table-cell').forEach(el => {
+    el.oninput = (e) => {
+      const blockIdx = parseInt(e.target.getAttribute('data-block-id'));
+      const rowIdx = parseInt(e.target.getAttribute('data-row'));
+      const colIdx = parseInt(e.target.getAttribute('data-col'));
+      window.currentBlocks[blockIdx].value.rows[rowIdx][colIdx] = e.target.value;
+      window.triggerCMSAutoSave();
+    };
+  });
+
+  // Bind live chart inputs
+  container.querySelectorAll('.cms-chart-label').forEach(el => {
+    el.oninput = (e) => {
+      const blockIdx = parseInt(e.target.getAttribute('data-block-id'));
+      window.currentBlocks[blockIdx].value.data.datasets[0].label = e.target.value;
+      window.triggerCMSAutoSave();
+    };
+  });
+  container.querySelectorAll('.cms-chart-type').forEach(el => {
+    el.onchange = (e) => {
+      const blockIdx = parseInt(e.target.getAttribute('data-block-id'));
+      window.currentBlocks[blockIdx].value.type = e.target.value;
+      window.renderBlocksEditor();
+      window.triggerCMSAutoSave();
+    };
+  });
+  container.querySelectorAll('.cms-chart-labels').forEach(el => {
+    el.oninput = (e) => {
+      const blockIdx = parseInt(e.target.getAttribute('data-block-id'));
+      window.currentBlocks[blockIdx].value.data.labels = e.target.value.split(',').map(s => s.trim());
+      window.triggerCMSAutoSave();
+    };
+  });
+  container.querySelectorAll('.cms-chart-values').forEach(el => {
+    el.oninput = (e) => {
+      const blockIdx = parseInt(e.target.getAttribute('data-block-id'));
+      window.currentBlocks[blockIdx].value.data.datasets[0].data = e.target.value.split(',').map(s => Number(s.trim()) || 0);
+      window.triggerCMSAutoSave();
+    };
+  });
+};
+
+// Add block modal triggers
+window.openBlockPicker = function(index) {
+  window.insertBlockAtIndex = index;
+  const modal = document.getElementById('block-picker-modal');
+  modal.style.display = 'flex';
+  
+  const grid = document.getElementById('block-types-grid');
+  const blockTypes = [
+    { type: 'title', icon: 'H', name: 'Заголовок', desc: 'Крупный жирный шрифт' },
+    { type: 'text', icon: '¶', name: 'Текст', desc: 'Простой текстовый параграф' },
+    { type: 'quote', icon: '“', name: 'Цитата', desc: 'Выделенный курсив с оранжевой полосой' },
+    { type: 'image', icon: '🖼️', name: 'Изображение', desc: 'Загрузка картинок с подписью' },
+    { type: 'video', icon: '🎥', name: 'Видео', desc: 'MP4 или ссылка на YouTube' },
+    { type: 'pdf', icon: '📄', name: 'PDF', desc: 'Файл или методическое пособие' },
+    { type: 'table', icon: '📊', name: 'Таблица', desc: 'Интерактивная таблица данных' },
+    { type: 'chart', icon: '📈', name: 'График', desc: 'Визуальный CSS-график с подписями' },
+    { type: 'list', icon: '•', name: 'Список', desc: 'Элементы списком по строкам' },
+    { type: 'divider', icon: '―', name: 'Разделитель', desc: 'Горизонтальная черта' },
+    { type: 'card', icon: '📇', name: 'Карточка', desc: 'Блок с заголовком и рамкой' },
+    { type: 'code', icon: '💻', name: 'Код', desc: 'Monaco-like интерактивный Python блок' },
+    { type: 'important', icon: '⚠️', name: 'Важно', desc: 'Критическое предупреждение' },
+    { type: 'tip', icon: '💡', name: 'Совет', desc: 'Полезная подсказка ментора' },
+    { type: 'assignment', icon: '📝', name: 'Задание', desc: 'Практическая задача' },
+    { type: 'experiment', icon: '🧪', name: 'Эксперимент', desc: 'Лабораторная работа' },
+    { type: 'goal', icon: '🎯', name: 'Цель', desc: 'Инженерная цель/метрика' }
+  ];
+  
+  grid.innerHTML = blockTypes.map(b => `
+    <div class="block-type-card" onclick="window.addBlock('${b.type}')">
+      <div class="block-type-icon">${b.icon}</div>
+      <div class="block-type-info">
+        <span class="block-type-name">${b.name}</span>
+        <span class="block-type-desc">${b.desc}</span>
+      </div>
+    </div>
+  `).join('');
+  
+  const searchInput = document.getElementById('block-search');
+  if (searchInput) {
+    searchInput.value = '';
+    searchInput.focus();
+  }
+};
+
+window.closeBlockPicker = function() {
+  document.getElementById('block-picker-modal').style.display = 'none';
+};
+
+window.addBlock = function(type) {
+  let defaultValue = '';
+  let defaultCaption = '';
+  
+  if (type === 'table') {
+    defaultValue = { headers: ['Колонка 1', 'Колонка 2'], rows: [['Значение 1', 'Значение 2']] };
+  } else if (type === 'chart') {
+    defaultValue = {
+      type: 'bar',
+      data: {
+        labels: ['Показатель 1', 'Показатель 2'],
+        datasets: [{ label: 'Статистика', data: [10, 20] }]
+      }
+    };
+  } else if (type === 'code') {
+    defaultValue = '# Напишите ваш код на Python\nprint("Hello World!")';
+  }
+  
+  const newBlock = {
+    type,
+    value: defaultValue,
+    caption: defaultCaption,
+    language: type === 'code' ? 'python' : undefined
+  };
+  
+  window.currentBlocks.splice(window.insertBlockAtIndex, 0, newBlock);
+  window.closeBlockPicker();
+  window.renderBlocksEditor();
+  window.triggerCMSAutoSave();
+};
+
+// Block reordering and deletion
+window.moveBlockUp = function(idx) {
+  if (idx === 0) return;
+  const temp = window.currentBlocks[idx];
+  window.currentBlocks[idx] = window.currentBlocks[idx - 1];
+  window.currentBlocks[idx - 1] = temp;
+  window.renderBlocksEditor();
+  window.triggerCMSAutoSave();
+};
+
+window.moveBlockDown = function(idx) {
+  if (idx === window.currentBlocks.length - 1) return;
+  const temp = window.currentBlocks[idx];
+  window.currentBlocks[idx] = window.currentBlocks[idx + 1];
+  window.currentBlocks[idx + 1] = temp;
+  window.renderBlocksEditor();
+  window.triggerCMSAutoSave();
+};
+
+window.deleteBlock = function(idx) {
+  if (!confirm("Удалить этот блок?")) return;
+  window.currentBlocks.splice(idx, 1);
+  window.renderBlocksEditor();
+  window.triggerCMSAutoSave();
+};
+
+// Monaco-like run button execution sandbox test in CMS
+window.runCodeBlockInCMS = async function(blockIdx) {
+  const block = window.currentBlocks[blockIdx];
+  const code = block.value;
+  const lang = block.language || 'python';
+  const outEl = document.getElementById(`cms-code-out-${blockIdx}`);
+  if (!outEl) return;
+  outEl.style.display = 'block';
+  outEl.style.color = '#FF8C42';
+  outEl.textContent = 'Выполнение скрипта в песочнице...';
+  try {
+    const res = await window.apiFetch('/api/compile', {
+      method: 'POST',
+      body: JSON.stringify({ language: lang, code })
+    });
+    if (res.status === 'success') {
+      outEl.style.color = '#a6e22e';
+      outEl.textContent = res.output || 'Программа отработала успешно.';
+    } else {
+      outEl.style.color = '#ff2d6b';
+      outEl.textContent = res.output || 'Ошибка компиляции.';
+    }
+  } catch (err) {
+    outEl.style.color = '#ff2d6b';
+    outEl.textContent = 'Ошибка выполнения: ' + (err.detail || 'Сервер недоступен.');
+  }
+};
+
+// File Uploader handler
+window.uploadCMSFile = async function(blockIdx, inputEl, bucket) {
+  const file = inputEl.files[0];
+  if (!file) return;
+  
+  const statusEl = document.getElementById('save-status-indicator');
+  statusEl.textContent = 'Загрузка файла...';
+  statusEl.className = 'save-status saving';
+  
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('lesson_id', window.selectedLessonId);
+  formData.append('bucket', bucket);
+  
+  try {
+    const response = await fetch((window.API_BASE || '') + '/admin/upload', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${window.Auth.getToken()}`
+      },
+      body: formData
+    });
+    
+    if (!response.ok) throw new Error('Upload failed');
+    const res = await response.json();
+    
+    window.currentBlocks[blockIdx].value = res.file_url;
+    window.currentBlocks[blockIdx].caption = file.name;
+    window.showToast("Файл успешно загружен!");
+    window.renderBlocksEditor();
+    window.triggerCMSAutoSave();
+  } catch (err) {
+    console.error("File upload failed", err);
+    window.showToast("Не удалось загрузить файл", "error");
+    statusEl.textContent = 'Ошибка загрузки';
+    statusEl.className = 'save-status error';
+  }
+};
+
+// Debounced Auto-save implementation
+window.triggerCMSAutoSave = function() {
+  const statusEl = document.getElementById('save-status-indicator');
+  if (statusEl) {
+    statusEl.textContent = 'Есть несохраненные правки...';
+    statusEl.className = 'save-status';
+  }
+  
+  if (window.autoSaveTimeout) clearTimeout(window.autoSaveTimeout);
+  window.autoSaveTimeout = setTimeout(() => {
+    window.saveCMSBlocks(true);
+  }, 2000); // 2s debounce
+};
+
+// Save blocks to database
+window.saveCMSBlocks = async function(isSilent = false) {
+  if (!window.selectedLessonId) return;
+  const statusEl = document.getElementById('save-status-indicator');
+  if (statusEl) {
+    statusEl.textContent = 'Сохранение...';
+    statusEl.className = 'save-status saving';
+  }
+  try {
+    await window.apiFetch(`/lessons/${window.selectedLessonId}/content`, {
+      method: 'POST',
+      body: JSON.stringify({ blocks: window.currentBlocks })
+    });
+    if (statusEl) {
+      statusEl.textContent = 'Все изменения сохранены';
+      statusEl.className = 'save-status';
+    }
+    if (!isSilent) window.showToast("Урок сохранен");
+  } catch (err) {
+    console.error("Failed to save blocks", err);
+    if (statusEl) {
+      statusEl.textContent = 'Ошибка автосохранения';
+      statusEl.className = 'save-status error';
+    }
+    if (!isSilent) window.showToast("Не удалось сохранить контент", "error");
+  }
+};
+
+// Save lesson settings
+window.saveLessonSettings = async function() {
+  if (!window.selectedLessonId) return;
+  const title = document.getElementById('settings-title').value.trim();
+  const type = document.getElementById('settings-type').value;
+  const status = document.getElementById('settings-status').value;
+  const duration = parseInt(document.getElementById('settings-duration').value) || 10;
+  
+  if (!title) {
+    window.showToast("Название урока не может быть пустым", "error");
+    return;
+  }
+  
+  try {
+    await window.apiFetch(`/admin/lessons/${window.selectedLessonId}`, {
+      method: 'PUT',
+      body: JSON.stringify({
+        title: title,
+        type: type,
+        status: status,
+        duration_min: duration,
+        forge_coins: 10,
+        is_required: true,
+        is_available: true
+      })
+    });
+    
+    window.showToast("Настройки применены!");
+    
+    // Update local settings object cache
+    for (const sec of window.currentSections) {
+      const found = sec.lessons.find(l => String(l.id) === String(window.selectedLessonId));
+      if (found) {
+        found.title = title;
+        found.type = type;
+        found.status = status;
+        found.duration_sec = duration * 60;
+        break;
+      }
+    }
+    
+    window.renderEditorSidebarTree();
+  } catch (err) {
+    console.error("Failed to save lesson settings", err);
+    window.showToast("Ошибка сохранения настроек", "error");
+  }
+};
+
+// Visual Table Editor modifiers
+window.renderVisualTableEditor = function(blockId, blockValue) {
+  let tableData = blockValue;
+  if (!tableData || typeof tableData !== 'object') {
+    tableData = { headers: ['Колонка 1', 'Колонка 2'], rows: [['Ячейка 1', 'Ячейка 2']] };
+  }
+  const headers = tableData.headers || [];
+  const rows = tableData.rows || [];
+  
+  return `
+    <div class="table-editor-wrapper" style="margin-top:8px;">
+      <table style="width:100%; border-collapse:collapse; margin-bottom:8px;">
+        <thead>
+          <tr>
+            ${headers.map((h, hIdx) => `
+              <th style="padding:6px; border:1px solid var(--border);">
+                <div style="display:flex; gap:4px; align-items:center;">
+                  <input type="text" class="cms-table-header" data-block-id="${blockId}" data-col="${hIdx}" value="${window.escHtml(h)}" style="background:none; border:none; color:#fff; font-weight:600; width:100%; font-size:13px;" />
+                  <button onclick="window.deleteTableColumn(${blockId}, ${hIdx})" style="background:none; border:none; color:#ff4d4d; cursor:pointer; font-size:11px;">×</button>
+                </div>
+              </th>
+            `).join('')}
+            <th style="width:40px; border:none; background:none;">
+              <button class="cms-control-btn" onclick="window.addTableColumn(${blockId})" title="Добавить колонку">+</button>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows.map((row, rIdx) => `
+            <tr>
+              ${row.map((cell, cIdx) => `
+                <td style="padding:6px; border:1px solid var(--border);">
+                  <input type="text" class="cms-table-cell" data-block-id="${blockId}" data-row="${rIdx}" data-col="${cIdx}" value="${window.escHtml(cell)}" style="background:none; border:none; color:var(--txt2); width:100%; font-size:13px;" />
+                </td>
+              `).join('')}
+              <td style="border:none; text-align:center;">
+                <button class="cms-control-btn delete" onclick="window.deleteTableRow(${blockId}, ${rIdx})" title="Удалить строку" style="color:#ff4d4d;">×</button>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+      <button class="btn btn-outline" onclick="window.addTableRow(${blockId})" style="font-size:11px; padding:4px 8px;">+ Строка</button>
+    </div>
+  `;
+};
+
+// Visual Chart Editor builders
+window.renderChartBlockEditor = function(blockIdx, blockValue) {
+  let chartConfig = blockValue;
+  if (!chartConfig || typeof chartConfig !== 'object' || !chartConfig.data) {
+    chartConfig = {
+      type: 'bar',
+      data: {
+        labels: ['Показатель 1', 'Показатель 2'],
+        datasets: [{ label: 'Статистика', data: [10, 20] }]
+      }
+    };
+  }
+  const label = chartConfig.data.datasets[0].label || '';
+  const labelsStr = chartConfig.data.labels.join(', ');
+  const valuesStr = chartConfig.data.datasets[0].data.join(', ');
+  const type = chartConfig.type || 'bar';
+  
+  return `
+    <div class="chart-editor-wrapper" style="margin-top:8px; display:flex; flex-direction:column; gap:8px;">
+      <div style="display:flex; gap:12px;">
+        <div style="flex:1;">
+          <label style="font-size:11px; color:var(--txt2);">Название показателя</label>
+          <input type="text" class="cms-chart-label cms-input" data-block-id="${blockIdx}" value="${window.escHtml(label)}" />
+        </div>
+        <div style="width:120px;">
+          <label style="font-size:11px; color:var(--txt2);">Тип графика</label>
+          <select class="cms-chart-type cms-select" data-block-id="${blockIdx}">
+            <option value="bar" ${type === 'bar' ? 'selected' : ''}>Столбчатый</option>
+            <option value="line" ${type === 'line' ? 'selected' : ''}>Линейный</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label style="font-size:11px; color:var(--txt2);">Подписи (через запятую)</label>
+        <input type="text" class="cms-chart-labels cms-input" data-block-id="${blockIdx}" value="${window.escHtml(labelsStr)}" placeholder="Пн, Вт, Ср" />
+      </div>
+      <div>
+        <label style="font-size:11px; color:var(--txt2);">Значения (через запятую)</label>
+        <input type="text" class="cms-chart-values cms-input" data-block-id="${blockIdx}" value="${window.escHtml(valuesStr)}" placeholder="10, 20, 15" />
+      </div>
+      <div style="margin-top:12px; background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:12px;">
+        <div style="font-size:11px; color:var(--txt2); margin-bottom:8px; text-transform:uppercase;">Превью графика</div>
+        ${window.renderCSSChart(chartConfig)}
+      </div>
+    </div>
+  `;
+};
+
+// Toggle CMS Preview mode with return banner
+window.toggleCMSPreviewMode = function() {
+  if (!window.selectedLessonId) return;
+  window.saveCMSBlocks(true);
+  const container = document.getElementById('editor-blocks-container');
+  container.innerHTML = `
+    <div style="background: rgba(255, 77, 28, 0.08); border:1px solid var(--accent); border-radius:8px; padding:12px 16px; margin-bottom:24px; display:flex; justify-content:space-between; align-items:center;">
+      <span style="font-size:13px; color:var(--txt); font-family:var(--font-body);">👁️ Режим предпросмотра урока для студентов</span>
+      <button class="btn btn-outline" onclick="window.renderBlocksEditor()" style="font-size:11px; padding:4px 8px;">Вернуться в редактор</button>
+    </div>
+    <div class="lesson-preview-content" style="max-width:700px; margin: 0 auto;">
+      ${window.renderLessonBlocks(window.currentBlocks)}
+    </div>
+  `;
+  window.initLessonBlocksInteractions(container);
 };
 
 

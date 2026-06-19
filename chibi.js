@@ -5,9 +5,9 @@
 (function() {
   try {
     const CHIBI_SPRITES = {
-      idle:    '/assets/chibi/chibi-idle.png',
-      talking: '/assets/chibi/chibi-talking.png',
-      happy:   '/assets/chibi/chibi-happy.png'
+      idle:    '/assets/chibi/chibi-idle.png?v=2',
+      talking: '/assets/chibi/chibi-talking.png?v=2',
+      happy:   '/assets/chibi/chibi-happy.png?v=2'
     };
 
     let currentSprite = 'idle';

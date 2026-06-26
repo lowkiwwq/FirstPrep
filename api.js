@@ -1,4 +1,5 @@
-const API_BASE = 'http://localhost:8000';
+const API_BASE = 'https://ttc-robotics-production.up.railway.app';
+window.API_BASE = API_BASE;
 
 window.apiFetch = async function apiFetch(path, options = {}) {
   const token = window.Auth ? window.Auth.getToken() : null;

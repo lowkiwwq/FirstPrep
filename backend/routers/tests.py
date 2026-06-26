@@ -1,5 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends
-from database import supabase
+from psycopg.types.json import Json
+
+from database import query, query_one, execute
 from deps import get_current_user, get_optional_user
 from models.test import SubmitRequest
 
@@ -18,55 +20,57 @@ def _attempt_status(test: dict, attempts: list) -> str:
 
 @router.get("/tests")
 def get_tests(current_user=Depends(get_optional_user)):
-    tests = supabase.table("tests").select("*").order("id").execute()
+    tests = query("SELECT * FROM tests ORDER BY id")
     result = []
-    for test in tests.data:
+    for test in tests:
         row = dict(test)
         row["attempts_used"] = 0
         row["best_score"] = None
         row["user_status"] = "unavailable" if not test["is_available"] else "available"
         if current_user:
-            attempts = supabase.table("test_attempts") \
-                .select("*") \
-                .eq("user_id", current_user["id"]) \
-                .eq("test_id", test["id"]) \
-                .execute()
-            row["attempts_used"] = len(attempts.data)
-            row["best_score"] = max((a["score_pct"] for a in attempts.data), default=None)
-            row["user_status"] = _attempt_status(test, attempts.data)
+            attempts = query(
+                "SELECT passed, score_pct::float AS score_pct FROM test_attempts "
+                "WHERE user_id = %s AND test_id = %s",
+                (current_user["id"], test["id"]),
+            )
+            row["attempts_used"] = len(attempts)
+            row["best_score"] = max((a["score_pct"] for a in attempts), default=None)
+            row["user_status"] = _attempt_status(test, attempts)
         result.append(row)
     return result
 
 
 @router.get("/tests/{test_id}/questions")
 def get_questions(test_id: int, current_user=Depends(get_current_user)):
-    test_res = supabase.table("tests").select("*").eq("id", test_id).execute()
-    if not test_res.data:
+    test = query_one("SELECT * FROM tests WHERE id = %s", (test_id,))
+    if not test:
         raise HTTPException(status_code=404, detail="Test not found")
-    test = test_res.data[0]
 
     if not test["is_available"]:
         raise HTTPException(status_code=403, detail="Test not available")
 
-    attempts = supabase.table("test_attempts").select("id") \
-        .eq("user_id", current_user["id"]).eq("test_id", test_id).execute()
-    if len(attempts.data) >= test["max_attempts"]:
+    attempts_used = query_one(
+        "SELECT COUNT(*) AS c FROM test_attempts WHERE user_id = %s AND test_id = %s",
+        (current_user["id"], test_id),
+    )["c"]
+    if attempts_used >= test["max_attempts"]:
         raise HTTPException(status_code=403, detail="No attempts remaining")
 
-    questions_res = supabase.table("questions").select("*") \
-        .eq("test_id", test_id).order("display_order").execute()
+    questions = query(
+        "SELECT * FROM questions WHERE test_id = %s ORDER BY display_order", (test_id,)
+    )
 
     result = []
-    for q in questions_res.data:
-        opts = supabase.table("question_options") \
-            .select("id, option_text") \
-            .eq("question_id", q["id"]) \
-            .execute()
+    for q in questions:
+        opts = query(
+            "SELECT id, option_text FROM question_options WHERE question_id = %s",
+            (q["id"],),
+        )
         result.append({
             "id": q["id"],
             "question_text": q["question_text"],
             "display_order": q["display_order"],
-            "options": opts.data,
+            "options": opts,
         })
 
     return {"test": test, "questions": result}
@@ -74,28 +78,30 @@ def get_questions(test_id: int, current_user=Depends(get_current_user)):
 
 @router.post("/tests/{test_id}/submit")
 def submit_test(test_id: int, body: SubmitRequest, current_user=Depends(get_current_user)):
-    test_res = supabase.table("tests").select("*").eq("id", test_id).execute()
-    if not test_res.data:
+    test = query_one("SELECT * FROM tests WHERE id = %s", (test_id,))
+    if not test:
         raise HTTPException(status_code=404, detail="Test not found")
-    test = test_res.data[0]
 
     if not test["is_available"]:
         raise HTTPException(status_code=403, detail="Test not available")
 
-    attempts = supabase.table("test_attempts").select("id") \
-        .eq("user_id", current_user["id"]).eq("test_id", test_id).execute()
-    if len(attempts.data) >= test["max_attempts"]:
+    attempts_used = query_one(
+        "SELECT COUNT(*) AS c FROM test_attempts WHERE user_id = %s AND test_id = %s",
+        (current_user["id"], test_id),
+    )["c"]
+    if attempts_used >= test["max_attempts"]:
         raise HTTPException(status_code=403, detail="No attempts remaining")
 
-    question_ids = [q["id"] for q in supabase.table("questions")
-                    .select("id").eq("test_id", test_id).execute().data]
+    question_ids = [
+        q["id"] for q in query("SELECT id FROM questions WHERE test_id = %s", (test_id,))
+    ]
 
-    correct_opts = supabase.table("question_options") \
-        .select("id, question_id") \
-        .eq("is_correct", True) \
-        .in_("question_id", question_ids) \
-        .execute()
-    correct_map = {o["question_id"]: o["id"] for o in correct_opts.data}
+    correct_opts = query(
+        "SELECT id, question_id FROM question_options "
+        "WHERE is_correct = TRUE AND question_id = ANY(%s)",
+        (question_ids,),
+    )
+    correct_map = {o["question_id"]: o["id"] for o in correct_opts}
 
     correct_count = sum(
         1 for a in body.answers
@@ -104,16 +110,22 @@ def submit_test(test_id: int, body: SubmitRequest, current_user=Depends(get_curr
     total = len(question_ids)
     score_pct = round((correct_count / total) * 100, 2) if total > 0 else 0.0
     passed = score_pct >= 60.0
-    attempt_num = len(attempts.data) + 1
+    attempt_num = attempts_used + 1
 
-    supabase.table("test_attempts").insert({
-        "user_id": current_user["id"],
-        "test_id": test_id,
-        "score_pct": score_pct,
-        "passed": passed,
-        "attempt_num": attempt_num,
-        "answers": [{"question_id": a.question_id, "option_id": a.option_id} for a in body.answers],
-    }).execute()
+    execute(
+        """
+        INSERT INTO test_attempts (user_id, test_id, score_pct, passed, attempt_num, answers)
+        VALUES (%s, %s, %s, %s, %s, %s)
+        """,
+        (
+            current_user["id"],
+            test_id,
+            score_pct,
+            passed,
+            attempt_num,
+            Json([{"question_id": a.question_id, "option_id": a.option_id} for a in body.answers]),
+        ),
+    )
 
     return {
         "score_pct": score_pct,

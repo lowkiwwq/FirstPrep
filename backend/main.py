@@ -1,11 +1,13 @@
+import os
 import sys
 from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
-from routers import auth, courses, tests, dashboard, progress, rag
+from routers import auth, courses, tests, dashboard, progress, rag, admin
 
 # backend/ в sys.path — нужно для импортов rag.* и config
 _BACKEND_DIR = str(Path(__file__).parent)
@@ -36,6 +38,10 @@ app.include_router(tests.router, tags=["tests"])
 app.include_router(dashboard.router, tags=["dashboard"])
 app.include_router(progress.router, tags=["progress"])
 app.include_router(rag.router)
+app.include_router(admin.router, tags=["admin"])
+
+os.makedirs("static", exist_ok=True)
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
 @app.get("/health")

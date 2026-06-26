@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends
-from database import supabase
-from deps import get_current_user
 from datetime import datetime, timezone
+
+from database import query, query_one
+from deps import get_current_user
 
 router = APIRouter()
 
@@ -10,54 +11,63 @@ router = APIRouter()
 def get_dashboard(current_user=Depends(get_current_user)):
     uid = current_user["id"]
 
-    lessons_res = supabase.table("user_lesson_progress") \
-        .select("lesson_id", count="exact").eq("user_id", uid).execute()
-    lessons_completed = lessons_res.count or 0
+    lessons_completed = query_one(
+        "SELECT COUNT(*) AS c FROM user_lesson_progress WHERE user_id = %s", (uid,)
+    )["c"]
 
-    attempts_res = supabase.table("test_attempts").select("*") \
-        .eq("user_id", uid).order("completed_at", desc=True).execute()
-    tests_passed = len({a["test_id"] for a in attempts_res.data if a["passed"]})
+    tests_passed = query_one(
+        "SELECT COUNT(DISTINCT test_id) AS c FROM test_attempts WHERE user_id = %s AND passed = TRUE",
+        (uid,),
+    )["c"]
 
-    profile_res = supabase.table("profiles").select("display_name, created_at").eq("id", uid).execute()
-    profile = profile_res.data[0] if profile_res.data else {}
-    display_name = profile.get("display_name", current_user["email"])
+    user = query_one("SELECT display_name, created_at FROM users WHERE id = %s", (uid,))
+    display_name = user["display_name"] if user else current_user["email"]
 
     days_in_platform = 1
-    if profile.get("created_at"):
-        created = datetime.fromisoformat(profile["created_at"].replace("Z", "+00:00"))
-        days_in_platform = max(1, (datetime.now(timezone.utc) - created).days + 1)
+    if user and user["created_at"]:
+        days_in_platform = max(1, (datetime.now(timezone.utc) - user["created_at"]).days + 1)
 
-    courses_res = supabase.table("courses").select("*").order("display_order").execute()
+    courses = query(
+        """
+        SELECT c.id, c.title, c.total_lessons,
+               (SELECT COUNT(*) FROM lessons l WHERE l.course_id = c.id) AS lesson_count,
+               (SELECT COUNT(*) FROM user_lesson_progress ulp
+                JOIN lessons l ON l.id = ulp.lesson_id
+                WHERE l.course_id = c.id AND ulp.user_id = %s) AS done_count
+        FROM courses c
+        ORDER BY c.display_order
+        """,
+        (uid,),
+    )
     course_progress = []
-    for c in courses_res.data:
-        ids = [l["id"] for l in supabase.table("lessons").select("id").eq("course_id", c["id"]).execute().data]
-        done_count = 0
-        if ids:
-            done_count = len(supabase.table("user_lesson_progress")
-                            .select("lesson_id").eq("user_id", uid).in_("lesson_id", ids).execute().data)
-        total = c["total_lessons"] or len(ids)
+    for c in courses:
+        total = c["total_lessons"] or c["lesson_count"]
         course_progress.append({
             "id": c["id"],
             "title": c["title"],
-            "progress_pct": round((done_count / total) * 100) if total > 0 else 0,
+            "progress_pct": round((c["done_count"] / total) * 100) if total > 0 else 0,
         })
 
-    recent_attempts = []
-    for a in attempts_res.data[:10]:
-        test_res = supabase.table("tests").select("title").eq("id", a["test_id"]).execute()
-        recent_attempts.append({
-            "test_id": a["test_id"],
-            "test_title": test_res.data[0]["title"] if test_res.data else "Unknown",
-            "score_pct": a["score_pct"],
-            "passed": a["passed"],
-            "completed_at": a["completed_at"],
-        })
+    recent_attempts = query(
+        """
+        SELECT ta.test_id, t.title AS test_title, ta.score_pct::float AS score_pct,
+               ta.passed, ta.completed_at
+        FROM test_attempts ta
+        JOIN tests t ON t.id = ta.test_id
+        WHERE ta.user_id = %s
+        ORDER BY ta.completed_at DESC
+        LIMIT 10
+        """,
+        (uid,),
+    )
 
-    certs_res = supabase.table("certificates").select("*").execute()
-    user_certs = {r["certificate_id"] for r in
-                  supabase.table("user_certificates").select("certificate_id").eq("user_id", uid).execute().data}
+    certs = query("SELECT id, name FROM certificates")
+    user_certs = {
+        r["certificate_id"]
+        for r in query("SELECT certificate_id FROM user_certificates WHERE user_id = %s", (uid,))
+    }
     certificates = [{"id": c["id"], "name": c["name"], "earned": c["id"] in user_certs}
-                    for c in certs_res.data]
+                    for c in certs]
 
     return {
         "display_name": display_name,

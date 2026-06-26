@@ -1,78 +1,75 @@
 from fastapi import APIRouter, HTTPException, Depends
-from database import supabase
+
+from database import query_one, execute
 from models.user import RegisterRequest, LoginRequest
 from deps import get_current_user
+from auth_utils import hash_password, verify_password, create_access_token
 
 router = APIRouter()
 
 
 @router.post("/register")
 def register(body: RegisterRequest):
-    try:
-        result = supabase.auth.sign_up({"email": body.email, "password": body.password})
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+    existing = query_one("SELECT id FROM users WHERE email = %s", (body.email,))
+    if existing:
+        raise HTTPException(status_code=400, detail="Email already registered")
 
-    if not result.user:
-        raise HTTPException(status_code=400, detail="Registration failed")
+    row = query_one(
+        """
+        INSERT INTO users (email, password_hash, display_name)
+        VALUES (%s, %s, %s)
+        RETURNING id, email, display_name
+        """,
+        (body.email, hash_password(body.password), body.name),
+    )
 
-    try:
-        supabase.table("profiles").insert({
-            "id": result.user.id,
-            "display_name": body.name,
-        }).execute()
-    except Exception:
-        pass
-
-    access_token = result.session.access_token if result.session else None
+    token = create_access_token(row["id"], row["email"])
     return {
-        "access_token": access_token,
+        "access_token": token,
         "user": {
-            "id": result.user.id,
-            "email": result.user.email,
-            "display_name": body.name,
+            "id": str(row["id"]),
+            "email": row["email"],
+            "display_name": row["display_name"],
         },
     }
 
 
 @router.post("/login")
 def login(body: LoginRequest):
-    try:
-        result = supabase.auth.sign_in_with_password({"email": body.email, "password": body.password})
-    except Exception as e:
+    user = query_one(
+        "SELECT id, email, password_hash, display_name FROM users WHERE email = %s",
+        (body.email,),
+    )
+    if not user or not verify_password(body.password, user["password_hash"]):
         raise HTTPException(status_code=401, detail="Invalid email or password")
 
-    if not result.user:
-        raise HTTPException(status_code=401, detail="Invalid email or password")
-
-    profile = supabase.table("profiles").select("display_name").eq("id", result.user.id).execute()
-    display_name = profile.data[0]["display_name"] if profile.data else result.user.email
-
+    token = create_access_token(user["id"], user["email"])
     return {
-        "access_token": result.session.access_token,
+        "access_token": token,
         "user": {
-            "id": result.user.id,
-            "email": result.user.email,
-            "display_name": display_name,
+            "id": str(user["id"]),
+            "email": user["email"],
+            "display_name": user["display_name"],
         },
     }
 
 
 @router.get("/me")
 def me(current_user=Depends(get_current_user)):
-    profile = supabase.table("profiles").select("display_name").eq("id", current_user["id"]).execute()
-    display_name = profile.data[0]["display_name"] if profile.data else current_user["email"]
+    user = query_one(
+        "SELECT id, email, display_name FROM users WHERE id = %s",
+        (current_user["id"],),
+    )
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
     return {
-        "id": current_user["id"],
-        "email": current_user["email"],
-        "display_name": display_name,
+        "id": str(user["id"]),
+        "email": user["email"],
+        "display_name": user["display_name"],
     }
 
 
 @router.post("/logout")
 def logout(current_user=Depends(get_current_user)):
-    try:
-        supabase.auth.sign_out()
-    except Exception:
-        pass
+    # Stateless JWT: nothing to revoke server-side; client drops the token.
     return {"message": "Logged out"}

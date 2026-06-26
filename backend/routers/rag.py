@@ -1,15 +1,15 @@
-"""Прокси-роутер к RAG-ассистенту Phoenix AI.
+"""Роутер Phoenix AI — прямые вызовы RAG-пайплайна."""
 
-Переменная окружения:
-  RAG_API_URL — URL задеплоенного RAG-сервиса, напр.
-                https://firstprep-rag.up.railway.app
-"""
+import sys
+from pathlib import Path
 
-import os
-
-import httpx
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 from pydantic import BaseModel
+
+# backend/ должен быть в sys.path чтобы работали импорты rag.* и config
+_BACKEND_DIR = str(Path(__file__).parent.parent)
+if _BACKEND_DIR not in sys.path:
+    sys.path.insert(0, _BACKEND_DIR)
 
 router = APIRouter(prefix="/rag", tags=["rag"])
 
@@ -19,22 +19,16 @@ class AskRequest(BaseModel):
 
 
 @router.post("/ask")
-async def ask_question(body: AskRequest):
-    rag_url = os.getenv("RAG_API_URL", "").rstrip("/")
-    if not rag_url:
-        raise HTTPException(status_code=503, detail="RAG service not configured (set RAG_API_URL)")
+def ask_question(body: AskRequest):
+    from rag.rag_pipeline import ask
 
-    try:
-        async with httpx.AsyncClient(timeout=60.0) as client:
-            response = await client.post(
-                f"{rag_url}/ask",
-                json={"question": body.question},
-            )
-            response.raise_for_status()
-            return response.json()
-    except httpx.TimeoutException:
-        raise HTTPException(status_code=504, detail="RAG service timed out")
-    except httpx.HTTPStatusError as e:
-        raise HTTPException(status_code=502, detail=f"RAG service returned {e.response.status_code}")
-    except Exception:
-        raise HTTPException(status_code=502, detail="RAG service unavailable")
+    result = ask(body.question)
+    return {
+        "answer": result.get("answer", ""),
+        "has_answer": result.get("has_answer", False),
+        "needs_clarification": result.get("needs_clarification", False),
+        "clarifying_questions": result.get("clarifying_questions", []),
+        "sources": result.get("sources", []),
+        "status": result.get("status", ""),
+        "low_confidence": result.get("low_confidence", False),
+    }
